@@ -1,0 +1,596 @@
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import MenuItemCard from '../../components/MenuItemCard';
+import { useCart } from '../../context/CartContext';
+import { formatCurrency } from '../../utils/formatCurrency';
+import {
+  UtensilsCrossed, ShoppingCart, Search, CheckCircle, Clock,
+  ArrowRight, Minus, Plus, RotateCcw, ReceiptText, Loader2
+} from 'lucide-react';
+import { orderAPI, feedbackAPI, menuAPI } from '../../services/api';
+import { useSocketContext } from '../../context/SocketContext';
+
+export default function CustomerMenu() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hotelId = searchParams.get('hotel');
+  const tableNum = searchParams.get('table') || '?';
+  const existingOrderId = searchParams.get('order');
+  const { items: cartItems, addItem, removeItem, updateQty, total, itemCount, clearCart } = useCart();
+
+  const [menuItems, setMenuItems] = useState([]);
+  const [loadingMenu, setLoadingMenu] = useState(true);
+  const [categories, setCategories] = useState(['All']);
+
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('All');
+  const [vegFilter, setVegFilter] = useState('all');
+  const [showCart, setShowCart] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [loadingOrderRestore, setLoadingOrderRestore] = useState(!!existingOrderId);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
+  const { emit, subscribe, connected } = useSocketContext();
+  const [activeOrderId, setActiveOrderId] = useState(existingOrderId);
+  const [placedOrderDetails, setPlacedOrderDetails] = useState(null);
+
+  const fetchMenu = useCallback(() => {
+    if (!hotelId) return;
+    menuAPI.getByHotel(hotelId).then(data => {
+      const items = data || [];
+      setMenuItems(items);
+      setCategories(['All', ...new Set(items.map(i => i.category))]);
+      setLoadingMenu(false);
+    }).catch(err => {
+      console.error("Failed to load menu", err);
+      setLoadingMenu(false);
+    });
+  }, [hotelId]);
+
+  useEffect(() => {
+    fetchMenu();
+  }, [fetchMenu]);
+
+  // Listen to menu updates (real-time availability)
+  useEffect(() => {
+    const unsub = subscribe('menu_update', () => {
+      fetchMenu();
+    });
+    return () => unsub && unsub();
+  }, [subscribe, fetchMenu]);
+
+  // Restore order state from URL on mount
+  useEffect(() => {
+    if (existingOrderId) {
+      orderAPI.getPublic(existingOrderId).then(data => {
+        if (data) {
+          setPlacedOrderDetails({
+            items: data.items,
+            total: data.total,
+            orderNumber: data.orderNumber,
+            paymentStatus: data.paymentStatus
+          });
+          const map = { 'new': 0, 'preparing': 1, 'ready': 2, 'bringing': 3, 'served': 4, 'paid': 5 };
+          setOrderStage(map[data.status] || 0);
+          setOrderPlaced(true);
+          
+          // Check if feedback was already submitted for this order
+          const isFeedbackDone = localStorage.getItem(`feedback_done_${existingOrderId}`);
+          if (isFeedbackDone) setFeedbackSubmitted(true);
+        }
+        setLoadingOrderRestore(false);
+      }).catch(err => {
+        console.error("Failed to restore order state", err);
+        setLoadingOrderRestore(false);
+      });
+    }
+  }, [existingOrderId]);
+
+  const filtered = useMemo(() => {
+    const list = menuItems.filter(i => {
+      if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (category !== 'All' && i.category !== category) return false;
+      if (vegFilter === 'veg' && !i.isVeg) return false;
+      if (vegFilter === 'nonveg' && i.isVeg) return false;
+      return true;
+    });
+    // Sort unavailable items to the end
+    return [...list].sort((a, b) => (a.isAvailable === b.isAvailable) ? 0 : a.isAvailable ? -1 : 1);
+  }, [menuItems, search, category, vegFilter]);
+
+  const ORDER_STAGES = [
+    { key: 'new', label: 'Order Received', desc: 'Your order has been received by the kitchen', icon: '📥', color: '#3498DB' },
+    { key: 'preparing', label: 'Preparing', desc: 'The chef is preparing your delicious food', icon: '👨‍🍳', color: '#F39C12' },
+    { key: 'ready', label: 'Ready', desc: 'Your order is ready and plated', icon: '✅', color: '#27AE60' },
+    { key: 'bringing', label: 'Waiter is Bringing Your Order', desc: 'Your food is on its way to your table', icon: '🏃', color: '#9B59B6' },
+    { key: 'served', label: 'Served', desc: 'Enjoy your meal!', icon: '🍽️', color: '#1B4F72' },
+    { key: 'paid', label: 'Paid', desc: 'Payment completed. Thank you!', icon: '💳', color: '#2ECC71' },
+  ];
+
+  const [orderStage, setOrderStage] = useState(0);
+
+  const [overallRating, setOverallRating] = useState(0);
+  const [foodRating, setFoodRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [showBill, setShowBill] = useState(false);
+
+  // Subscribe to Hotel Room
+  useEffect(() => {
+    if (hotelId && connected) {
+      emit('join_hotel', { hotelId });
+    }
+  }, [hotelId, connected, emit]);
+
+  // Listen to order status updates
+  useEffect(() => {
+    if (activeOrderId) {
+      const unsubStatus = subscribe('order_status_update', (data) => {
+        if (data.orderId === activeOrderId) {
+          const map = { 'new': 0, 'preparing': 1, 'ready': 2, 'bringing': 3, 'served': 4, 'paid': 5 };
+          setOrderStage(map[data.status] || 0);
+          if (data.order) {
+            setPlacedOrderDetails({
+              items: data.order.items,
+              total: data.order.total,
+              orderNumber: data.order.orderNumber,
+              paymentStatus: data.order.paymentStatus
+            });
+          }
+        }
+      });
+
+      const unsubPayment = subscribe('payment_confirmed', (data) => {
+        if (data.orderId === activeOrderId) {
+          if (data.order) {
+            setPlacedOrderDetails({
+              items: data.order.items,
+              total: data.order.total,
+              orderNumber: data.order.orderNumber,
+              paymentStatus: data.order.paymentStatus
+            });
+            const map = { 'new': 0, 'preparing': 1, 'ready': 2, 'bringing': 3, 'served': 4, 'paid': 5 };
+            setOrderStage(map[data.order.status] || 0);
+          }
+        }
+      });
+
+      return () => {
+        unsubStatus && unsubStatus();
+        unsubPayment && unsubPayment();
+      };
+    }
+  }, [activeOrderId, subscribe]);
+
+  // Prevent back navigation and page exit during active order
+  useEffect(() => {
+    if (orderPlaced && orderStage < 5) {
+      // Prevent back button
+      window.history.pushState(null, null, window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, null, window.location.href);
+        alert("Please don't go back. You can order more items from the menu if needed.");
+      };
+
+      // Warn before refresh/close
+      const handleBeforeUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = 'Your order is in progress. Are you sure you want to leave?';
+      };
+
+      window.addEventListener('popstate', handlePopState);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [orderPlaced, orderStage]);
+
+  const placeOrder = async () => {
+    setIsPlacingOrder(true);
+    try {
+      const payload = {
+        hotelId,
+        tableNumber: Number(tableNum),
+        items: cartItems.map(i => ({ name: i.name, price: i.price, qty: i.qty, menuItemId: i._id, notes: i.notes || '' })),
+        specialInstructions: '',
+        orderId: existingOrderId || activeOrderId
+      };
+      const res = await orderAPI.create(payload);
+      setActiveOrderId(res._id);
+      setPlacedOrderDetails({
+        items: res.items,
+        total: res.total,
+        orderNumber: res.orderNumber,
+        paymentStatus: res.paymentStatus
+      });
+      setOrderPlaced(true);
+      setOrderStage(0);
+      setShowCart(false);
+      clearCart();
+
+      // Update URL with order ID
+      setSearchParams({ hotel: hotelId, table: tableNum, order: res._id });
+    } catch (err) {
+      alert("Failed to place order: " + err.message);
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const submitFeedback = async () => {
+    if (!overallRating || isSubmittingFeedback) return;
+    setIsSubmittingFeedback(true);
+    try {
+      await feedbackAPI.submit({
+        orderId: activeOrderId,
+        hotelId,
+        rating: overallRating,
+        foodRating,
+        comment: feedback
+      });
+      localStorage.setItem(`feedback_done_${activeOrderId}`, 'true');
+      setFeedbackSubmitted(true);
+    } catch (err) {
+      alert("Failed to submit feedback");
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
+  const resetFlow = () => {
+    setOrderPlaced(false);
+    setOrderStage(0);
+    setOverallRating(0);
+    setFoodRating(0);
+    setFeedback('');
+    setFeedbackSubmitted(false);
+    setPlacedOrderDetails(null);
+  };
+
+  const hasUnavailableInCart = useMemo(() => {
+    return cartItems.some(ci => {
+      const m = menuItems.find(mi => mi._id === ci.menuItemId);
+      return m && m.isAvailable === false;
+    });
+  }, [cartItems, menuItems]);
+
+  const renderStars = (ratingValue, setRatingFn) => (
+    <div style={{ display: 'flex', gap: '4px' }}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <button
+          key={star}
+          onClick={() => setRatingFn(star)}
+          style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: ratingValue >= star ? '#F1C40F' : '#E2E8F0', transition: 'color .2s', padding: 0 }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+
+  if (loadingOrderRestore) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #E2E8F0', borderTopColor: '#2E86C1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <p style={{ marginTop: '16px', color: '#64748B', fontWeight: 600 }}>Loading your order status...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (orderPlaced) {
+    const current = ORDER_STAGES[orderStage];
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #E8F8F0, #D5F5E3)', padding: '24px' }}>
+        <div style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
+
+          {feedbackSubmitted ? (
+            <div style={{ background: '#fff', padding: '40px 20px', borderRadius: '20px', boxShadow: '0 8px 30px rgba(0,0,0,.08)', animation: 'orderFadeIn .5s ease' }}>
+              <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
+              <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1B4F72', marginBottom: '12px' }}>Thank you!</h2>
+              <p style={{ color: '#64748B', fontSize: '15px', marginBottom: '12px', lineHeight: '1.5' }}>We value your feedback, if there is anything you want to share please contact us. Please visit us again!</p>
+
+              {placedOrderDetails?.paymentStatus !== 'paid' && orderStage < 5 && (
+                <div style={{ background: '#FFFBEB', padding: '12px', borderRadius: '10px', border: '1px solid #FEF3C7', marginBottom: '24px', animation: 'orderPulse 2s infinite' }}>
+                  <p style={{ color: '#92400E', fontSize: '14px', fontWeight: 700, margin: 0 }}>💳 Please reach the cashier to complete your payment.</p>
+                </div>
+              )}
+
+              <button onClick={resetFlow} className="btn btn-primary btn-lg" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+                <RotateCcw size={16} /> Order More
+              </button>
+
+              {placedOrderDetails && (
+                <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '20px', textAlign: 'left', border: '1px solid #E2E8F0' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, borderBottom: '2px dashed #CBD5E1', paddingBottom: '12px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4F72' }}>
+                    <ReceiptText size={18} /> Final Bill {placedOrderDetails.orderNumber && `#${placedOrderDetails.orderNumber.toString().padStart(3, '0')}`}
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {placedOrderDetails.items.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
+                        <span>{item.qty}x {item.name}</span>
+                        <span style={{ fontWeight: 600 }}>{formatCurrency(item.price * item.qty)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '2px dashed #CBD5E1', fontWeight: 800, fontSize: '18px', color: '#1B4F72' }}>
+                    <span>Total</span>
+                    <span>{formatCurrency(placedOrderDetails.total)}</span>
+                  </div>
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748B' }}>Payment Status</span>
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      background: placedOrderDetails.paymentStatus === 'paid' ? '#DCFCE7' : '#FEE2E2',
+                      color: placedOrderDetails.paymentStatus === 'paid' ? '#166534' : '#991B1B',
+                      textTransform: 'uppercase'
+                    }}>
+                      {placedOrderDetails.paymentStatus === 'paid' ? 'Paid' : 'Not Paid'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Animated Icon */}
+              <div key={orderStage} style={{ fontSize: '56px', marginBottom: '12px', animation: 'orderBounce .6s ease' }}>{current.icon}</div>
+              <h2 key={`t-${orderStage}`} style={{ fontSize: '24px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", color: current.color, marginBottom: '6px', animation: 'orderFadeIn .5s ease' }}>{current.label}</h2>
+              <p style={{ color: '#4A5568', fontSize: '14px', marginBottom: '12px' }}>{current.desc}</p>
+
+              {orderStage < 5 && (
+                <div style={{ color: '#E74C3C', fontWeight: 900, fontSize: '18px', marginBottom: '24px', animation: 'orderPulse 1.5s infinite', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  ⚠ Please wait, don't go back or refresh this page.
+                </div>
+              )}
+
+              {/* Timeline */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0', textAlign: 'left', background: '#fff', borderRadius: '16px', padding: '20px 24px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', marginBottom: '20px' }}>
+                {ORDER_STAGES.map((s, i) => {
+                  const done = i < orderStage;
+                  const active = i === orderStage;
+                  return (
+                    <div key={s.key} style={{ display: 'flex', gap: '14px', position: 'relative', paddingBottom: i < ORDER_STAGES.length - 1 ? '20px' : '0' }}>
+                      {/* Vertical line */}
+                      {i < ORDER_STAGES.length - 1 && (
+                        <div style={{ position: 'absolute', left: '15px', top: '32px', width: '2px', height: 'calc(100% - 32px)', background: done ? '#27AE60' : '#EDF2F7', transition: 'background .5s' }} />
+                      )}
+                      {/* Dot */}
+                      <div style={{
+                        width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px',
+                        background: done ? '#27AE60' : active ? current.color : '#EDF2F7',
+                        color: done || active ? '#fff' : '#A0AEC0',
+                        transition: 'all .4s', fontWeight: 700,
+                        boxShadow: active ? `0 0 0 4px ${current.color}30` : 'none',
+                      }}>
+                        {done ? '✓' : i + 1}
+                      </div>
+                      {/* Text */}
+                      <div style={{ paddingTop: '4px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: done || active ? 700 : 500, color: done ? '#27AE60' : active ? current.color : '#A0AEC0', transition: 'color .4s' }}>{s.label}</div>
+                        {active && <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{s.desc}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bill Access Guidance */}
+              {orderStage >= 4 && !feedbackSubmitted && (
+                <div style={{ background: 'linear-gradient(135deg, #FFF9C4, #FFF176)', padding: '16px', borderRadius: '14px', marginBottom: '20px', border: '1px solid #FBC02D', textAlign: 'center', animation: 'orderPulse 2s infinite' }}>
+                  <div style={{ fontWeight: 800, color: '#F57F17', fontSize: '14px', marginBottom: '4px' }}>🎁 View Your Bill</div>
+                  <div style={{ fontSize: '13px', color: '#AF601A', fontWeight: 500 }}>Please submit your feedback below to unlock your digital bill and payment status.</div>
+                </div>
+              )}
+
+              {/* Feedback UI */}
+              {orderStage >= 4 && (
+                <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'left' }}>
+                  
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#1B4F72', textAlign: 'center' }}>How was your experience?</h3>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Food Quality</span>
+                    {renderStars(foodRating, setFoodRating)}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Overall Experience</span>
+                    {renderStars(overallRating, setOverallRating)}
+                  </div>
+
+                  <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    placeholder="Any comments? (Optional)"
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '12px', fontSize: '14px', resize: 'vertical' }}
+                  />
+                  <button
+                    onClick={submitFeedback}
+                    disabled={!overallRating || isSubmittingFeedback}
+                    className="btn btn-primary"
+                    style={{ width: '100%', opacity: !overallRating || isSubmittingFeedback ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    {isSubmittingFeedback && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
+                    {isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+                  </button>
+                </div>
+              )}
+
+              {orderStage < 4 && (
+                <button onClick={resetFlow} className="btn btn-primary btn-lg" style={{ marginTop: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <RotateCcw size={16} /> Order More
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        <style>{`
+          @keyframes orderBounce { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0; } 50% { transform: scale(1.15) rotate(5deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+          @keyframes orderFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes orderPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        `}</style>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg, #1B4F72, #2E86C1)', padding: '20px 16px', color: '#fff', position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '600px', margin: '0 auto' }}>
+          <div>
+            <span style={{ fontSize: '20px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UtensilsCrossed size={20} style={{ color: '#AED6F1' }} />
+              Table<span style={{ color: '#AED6F1' }}>Tap</span>
+            </span>
+            <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px' }}>Table {tableNum}</div>
+          </div>
+          <button onClick={() => setShowCart(true)} style={{ position: 'relative', background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '12px', padding: '10px 16px', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShoppingCart size={20} />
+            {itemCount > 0 && <span style={{ background: '#E74C3C', borderRadius: '999px', padding: '2px 8px', fontSize: '12px', fontWeight: 700 }}>{itemCount}</span>}
+          </button>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search menu..." style={{ width: '100%', padding: '12px 16px 12px 40px', borderRadius: '12px', border: '2px solid #E2E8F0', fontSize: '14px', background: '#fff', outline: 'none' }} />
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {categories.map(c => (
+            <button key={c} onClick={() => setCategory(c)} style={{ padding: '6px 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 500, border: 'none', background: category === c ? '#2E86C1' : '#EDF2F7', color: category === c ? '#fff' : '#64748B', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>{c}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+          {[
+            { key: 'all', label: 'All' },
+            { key: 'veg', label: 'Veg', dotColor: '#27AE60' },
+            { key: 'nonveg', label: 'Non-Veg', dotColor: '#C0392B' },
+          ].map(f => (
+            <button key={f.key} onClick={() => setVegFilter(f.key)} style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500, border: '1px solid', borderColor: vegFilter === f.key ? '#2E86C1' : '#E2E8F0', background: vegFilter === f.key ? 'rgba(46,134,193,.1)' : 'transparent', color: vegFilter === f.key ? '#2E86C1' : '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              {f.dotColor && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: f.dotColor }} />}
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Menu Items */}
+        {loadingMenu ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#A0AEC0' }}>Loading menu...</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px' }}>
+            {filtered.map(item => {
+              const cartItem = cartItems.find(ci => ci.menuItemId === item._id);
+              const qty = cartItem ? cartItem.qty : 0;
+              return (
+                <MenuItemCard
+                  key={item._id}
+                  item={item}
+                  cartQty={qty}
+                  onIncrease={() => addItem(item, 1)}
+                  onDecrease={() => updateQty(item._id, qty - 1)}
+                />
+              );
+            })}
+          </div>
+        )}
+        {!loadingMenu && filtered.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: '#A0AEC0' }}>No items found</div>}
+      </div>
+
+      {/* Cart Drawer */}
+      {showCart && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.5)' }} onClick={() => setShowCart(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '20px 20px 0 0', maxHeight: '80vh', overflow: 'auto', padding: '24px', animation: 'fadeIn .3s ease' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShoppingCart size={20} /> Your Cart
+            </h3>
+            {cartItems.length === 0 ? (
+              <p style={{ color: '#A0AEC0', textAlign: 'center', padding: '20px' }}>Cart is empty</p>
+            ) : (
+              <>
+                {cartItems.map((ci, idx) => {
+                  const menuItem = menuItems.find(m => m._id === ci.menuItemId);
+                  const isAvailable = menuItem ? menuItem.isAvailable : true;
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #EDF2F7', opacity: isAvailable ? 1 : 0.6 }}>
+                      <div style={{ flex: 1, marginRight: '12px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {ci.name}
+                          {!isAvailable && <span style={{ fontSize: '10px', background: '#FEE2E2', color: '#EF4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Out of Stock</span>}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#64748B' }}>{formatCurrency(ci.price)} each</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button onClick={() => updateQty(ci.menuItemId, ci.qty - 1, ci.notes)} style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Minus size={14} />
+                        </button>
+                        <span style={{ fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{ci.qty}</span>
+                        <button
+                          onClick={() => isAvailable && updateQty(ci.menuItemId, ci.qty + 1, ci.notes)}
+                          style={{
+                            width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #E2E8F0',
+                            background: isAvailable ? '#fff' : '#F1F5F9',
+                            cursor: isAvailable ? 'pointer' : 'not-allowed',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            opacity: isAvailable ? 1 : 0.5
+                          }}
+                        >
+                          <Plus size={14} />
+                        </button>
+                        <span style={{ fontWeight: 700, minWidth: '60px', textAlign: 'right', fontSize: '14px' }}>{formatCurrency(ci.price * ci.qty)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0 8px', fontWeight: 800, fontSize: '18px' }}>
+                  <span>Total</span><span>{formatCurrency(total)}</span>
+                </div>
+                {hasUnavailableInCart && (
+                  <div style={{ color: '#E53E3E', background: '#FFF5F5', padding: '8px', borderRadius: '8px', fontSize: '12px', textAlign: 'center', marginBottom: '8px', fontWeight: 600, border: '1px solid #FEB2B2' }}>
+                    Some items are out of stock. Please remove them to proceed.
+                  </div>
+                )}
+                <button
+                  onClick={placeOrder}
+                  disabled={hasUnavailableInCart || isPlacingOrder}
+                  className="btn btn-primary btn-lg"
+                  style={{
+                    width: '100%', justifyContent: 'center', marginTop: '8px',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    opacity: hasUnavailableInCart || isPlacingOrder ? 0.6 : 1,
+                    cursor: hasUnavailableInCart || isPlacingOrder ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isPlacingOrder ? (
+                    <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Placing Order...</>
+                  ) : hasUnavailableInCart ? (
+                    'Unavailable Items in Cart'
+                  ) : (
+                    <>Place Order <ArrowRight size={16} /></>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Cart Button */}
+      {itemCount > 0 && !showCart && (
+        <button onClick={() => setShowCart(true)} style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #1B4F72, #2E86C1)', color: '#fff', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 8px 24px rgba(27,79,114,.4)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 50 }}>
+          <ShoppingCart size={18} /> View Cart ({itemCount}) • {formatCurrency(total)}
+        </button>
+      )}
+    </div>
+  );
+}

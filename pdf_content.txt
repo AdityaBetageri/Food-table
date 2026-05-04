@@ -1,0 +1,683 @@
+🍽 
+TableTap
+Smart QR Restaurant Ordering System
+Complete Project Documentation & Development Blueprint
+Project Type Final Year / Startup
+Tech Stack React · Node.js · MongoDB ·  
+Socket.io
+Version v1.0 — 2025
+Confidential — Project Use Only
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+1. Project Overview
+  TableTap💡 is a cloud-based Smart QR Restaurant Ordering System that allows hotel and 
+restaurant owners to digitise their entire ordering workflow — from table to kitchen to billing 
+— without any physical menus or paper.
+Customer scans a QR → browses digital menu → places order → kitchen receives it 
+instantly → bill is auto-generated.
+1.1  Problem Statement
+Traditional restaurant systems rely on handwritten order slips, physical menus, and manual 
+communication between waiters and kitchen staff. This leads to order errors, delays, unhygienic menu 
+sharing, and poor customer experience — especially during peak hours.
+1.2  Solution
+TableTap replaces all of this with a seamless, real-time digital system. Each table gets a unique QR 
+code. Customers self-order, the kitchen dashboard receives it instantly via WebSocket, and the admin 
+has full visibility and analytics — all from a single unified platform.
+1.3  Key Highlights
+•Sign-up & onboarding is exclusively for Hotel/Restaurant Owners
+•Single unified dashboard — owner and chef management combined
+•Public-facing Landing Page showcasing the platform's amenities and features
+•Real-time order flow using Socket.io — zero page refresh required
+•QR code auto-links to a mobile-first customer menu with table context
+•Role-based access: Owner, Chef, Waiter, Cashier — all under one hotel account
+2. User Roles & Responsibilities
+TableTap operates with a clear role hierarchy under each hotel account. Only the Hotel Owner registers  
+— all other roles are created and managed by the owner inside the dashboard.
+Role Access Level Responsibilities
+Hotel Owner / 
+AdminFull AccessRegister, manage menu, manage  
+staff roles, view all orders, 
+analytics, billing, settings
+Chef Kitchen DashboardView incoming orders in real-
+time, mark status: Preparing → 
+Ready, set estimated time
+Waiter Order & Status ViewView ready orders, assist 
+customers, mark table as served
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+Cashier Billing OnlyView completed orders, generate 
+bills, mark payment status
+Customer Menu & Order Only (no login)Scan QR, browse menu, place 
+order, view live status, give 
+feedback
+Note:  Customers do NOT need to create an account. The QR code auto-identifies their table  
+and session.
+3. Application Modules
+3.1  Public Landing Page (Marketing Website)
+This is the first page hotel owners and visitors see when they visit the TableTap website. It serves as 
+the product's marketing and onboarding entry point.
+Sections on the Landing Page
+•Hero Section — Bold headline, tagline, and a 'Get Started Free' CTA button
+•How It Works — 4-step animated flow: Scan → Order → Cook → Pay
+•Features & Amenities — Icon grid showcasing all platform capabilities
+•For Hotel Owners — Benefits, pricing-free pitch, testimonials
+•Live Demo Preview — Embedded GIF/video of the product in action
+•Contact / Get Started — Registration CTA or enquiry form
+•Footer — Links, social media, terms, privacy policy
+Landing Page Amenities / Features to Showcase
+Feature Description
+ QR-Based 📱
+OrderingNo app download needed — customers order directly from browser
+ Real-Time ⚡
+UpdatesKitchen and admin notified instantly via WebSocket
+ Live Analytics📊 Revenue, popular items, peak hours — all on one screen
+ Digital Menu🍽 Beautiful menu cards with images, categories, and search
+ Chef Dashboard👨‍🍳 Simple, large-screen UI for kitchen staff
+ Auto Billing🧾 Bill auto-generates when order is marked ready
+ Secure Login🔐 JWT-based auth with bcrypt password hashing
+ Order History📦 Every order saved with timestamp, items, and payment status
+ Feedback System⭐ Customer ratings collected per order
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+ Print Receipt🖨 One-click printable bill for customers
+3.2  Hotel Owner — Registration & Onboarding
+Only hotel/restaurant owners can register on TableTap. The registration process is designed to be 
+simple and guide the owner step-by-step to set up their restaurant profile before going live.
+Owner Registration Flow
+1.Visit TableTap landing page and click 'Get Started Free'
+2.Fill registration form: Name, Hotel Name, Email, Password, Phone, City
+3.Email verification link sent (or OTP-based verification)
+4.Owner lands on the Onboarding Wizard:
+◦Step 1 — Set up restaurant profile (logo, address, timings)
+◦Step 2 — Add tables and generate QR codes
+◦Step 3 — Add menu categories and items
+◦Step 4 — Add staff accounts (Chef, Waiter, Cashier)
+◦Step 5 — Go live!
+5.Owner is redirected to the unified Owner + Chef Dashboard
+4. Unified Owner & Chef Dashboard
+TableTap uses a single dashboard application with role-based views. When the owner logs in, they see  
+all management panels. When a chef logs in with their staff credentials, they see only the kitchen-
+relevant view. Both share the same URL domain and sidebar navigation — access is controlled by JWT  
+role claims.
+4.1  Dashboard Sidebar Navigation
+Sidebar Item Visible To
+ Dashboard 📊
+OverviewOwner only
+ Live Orders🛒 Owner + Chef + Waiter
+ Menu 📋
+ManagementOwner only
+ Table & QR 🪑
+ManagerOwner only
+ Staff Accounts👥 Owner only
+ Sales Analytics📈 Owner only
+ Billing & Payments💰 Owner + Cashier
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+ Customer ⭐
+FeedbackOwner only
+ Settings⚙️ Owner only
+ Kitchen Queue🍳 Chef only
+4.2  Dashboard Overview (Owner View)
+•Today's Revenue — Running total with a mini sparkline chart
+•Total Orders Today — Count of new, preparing, ready, completed
+•Active Tables — How many tables currently have active orders
+•Top Selling Items — Today's top 5 menu items by quantity
+•Recent Orders Feed — Live-updating order list (newest first)
+•Sales Chart — Weekly/monthly bar or line chart
+4.3  Live Orders Panel (Owner + Chef)
+This is the most critical screen. It shows all incoming orders in real-time. Orders appear as cards, 
+colour-coded by status.
+Status Card Colour & Meaning
+ New🆕Blue — order just placed by customer, awaiting kitchen 
+acknowledgement
+ Preparing⏳ Orange — chef has accepted and is cooking the order
+ Ready✅ Green — order is ready to be served to the table
+ Served🧾 Gray — waiter has delivered to table
+ Paid💳 Dark — payment received, order closed
+4.4  Kitchen Queue (Chef View)
+When a chef logs in, they see a focused, distraction-free screen designed for use on a large kitchen 
+monitor or tablet.
+•All new orders appear at the top with a sound notification + visual flash
+•Each order card shows: Table Number, Items + Quantities, Special Notes (e.g. 'less spicy, no 
+onion')
+•Chef actions: Click 'Start Preparing' → order status changes to Preparing
+•Chef actions: Click 'Mark Ready' → waiter and admin notified instantly
+•Estimated Time field — chef can optionally set an ETA in minutes
+•Priority flag — admin can mark urgent orders with a red priority badge
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+4.5  Menu Management
+•Add, Edit, Delete food items
+•Fields: Name, Price, Category, Image upload, Description, Availability toggle
+•Create and manage categories (Starters, Mains, Desserts, Beverages, etc.)
+•Bulk availability toggle — mark items as out-of-stock quickly
+•Drag-and-drop reordering of items within categories
+4.6  Table & QR Code Manager
+•Add tables with table number and seating capacity
+•Auto-generate unique QR code per table (using qrcode.js)
+•QR encodes URL: yourdomain.com/menu?table=5
+•Download individual QR codes as PNG, or batch export as PDF
+•Print-ready QR cards with restaurant logo and table number
+•View table status: Empty / Active / Awaiting Payment
+4.7  Staff Account Management
+•Owner creates staff accounts: Chef, Waiter, Cashier
+•Each staff member gets email + password login
+•Owner can reset passwords, deactivate accounts
+•Role-based dashboard view automatically applies on login
+4.8  Sales Analytics
+•Daily / Weekly / Monthly revenue line chart
+•Top 10 most ordered items — horizontal bar chart
+•Busiest hours heatmap — days vs. hours
+•Order count by category pie chart
+•Export report as PDF or CSV
+5. Customer Journey (No Login Required)
+The customer experience is entirely browser-based. No app download, no account creation. The QR 
+code does all the magic.
+5.1  Step-by-Step Flow
+6.Customer sits at table and scans QR code with phone camera
+7.Browser opens: yourdomain.com/menu?table=5 — table number is auto-captured
+8.Customer sees the Digital Menu — categorised, searchable, with images and prices
+9.Customer taps items to add to cart — can customize each item (notes, quantity)
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+10.Customer reviews cart and taps 'Place Order'
+11.Order confirmation screen shown — with live status tracker
+12.Status updates in real-time: New → Preparing → Ready → Served
+13.When served, customer can optionally pay (cash or QR-based UPI) and rate the experience
+5.2  Customer UI Pages
+Page Key Elements
+Home / MenuCategory tabs, search bar, item cards with image + price + 
+description
+Item Detail Full image, add-to-cart, quantity, special notes / customisation
+Cart Order summary, item list with quantities, total, 'Place Order' button
+Order TrackingLive status bar (New → Preparing → Ready), estimated time, order  
+items recap
+PaymentTotal bill, cash / UPI toggle, 'Pay Now' button, payment 
+confirmation
+Feedback Star rating (1–5), optional comment text box, submit button
+5.3  Special Customer Features
+•Call Waiter Button — sends a waiter alert notification to the dashboard
+•Repeat Previous Order — shows last session's items (stored in localStorage)
+•Search — fuzzy search across all menu item names and descriptions
+•Filter by Dietary Preference — Veg / Non-Veg / Egg toggle
+6. Technical Architecture
+6.1  Tech Stack Summary
+Layer Technology & Purpose
+FrontendReact.js + Tailwind CSS — customer UI, admin & chef dashboard, 
+landing page
+BackendNode.js + Express.js — REST API server, business logic, 
+middleware
+DatabaseMongoDB + Mongoose — flexible document storage for orders, 
+menus, users
+Real-Time Socket.io — instant push from customer order to kitchen and admin
+AuthenticationJWT (JSON Web Tokens) + bcrypt — secure stateless auth with 
+password hashing
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+QR Generationqrcode.js (client-side) + qrcode (npm, server-side) — per-table QR 
+creation
+File Storage Cloudinary or local /uploads — menu item images
+Hosting Vercel (frontend) + Render (backend) — free tier friendly
+Payment (Optional) Razorpay or UPI deeplink — online payment integration
+6.2  System Architecture Diagram (Text Representation)
+CUSTOMER PHONE (Browser)
+  └── scans QR → opens /menu?table=X → React SPA loads
+  └── places order → POST /api/order → Express.js → MongoDB save
+  └── Socket.io emits 'new_order' event
+ADMIN DASHBOARD (React, Desktop)
+  └── Socket.io listener: receives 'new_order' → updates Live Orders panel
+  └── Fetches analytics, manages menu/tables/staff via REST API
+CHEF DASHBOARD (React, Tablet/Monitor)
+  └── Socket.io listener: receives 'new_order' → renders order card
+  └── Chef clicks Ready → PUT /api/order-status/:id → emits 'order_ready'
+EXPRESS.JS SERVER
+  └── Routes: /auth, /menu, /order, /order-status, /analytics, /payment
+  └── Middleware: JWT verify, role-check, error handler
+  └── Socket.io server: bridges customer ↔ admin ↔ chef events
+MONGODB
+  └── Collections: Users, Hotels, Tables, MenuItems, Orders, Feedback
+7. Database Schema (MongoDB)
+7.1  Users Collection
+Field Type & Notes
+_id ObjectId — auto-generated primary key
+name String — full name of the user
+email String — unique, used for login
+password String — bcrypt-hashed, never stored plain
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+role Enum: 'owner' | 'chef' | 'waiter' | 'cashier'
+hotelId ObjectId — reference to Hotels collection
+isActive Boolean — owner can deactivate staff
+createdAt Date — auto timestamp
+7.2  Hotels Collection
+Field Type & Notes
+_id ObjectId
+name String — restaurant/hotel name
+ownerId ObjectId — ref to Users (owner)
+logo String — image URL
+address String
+phone String
+timings Object — { open: '09:00', close: '23:00' }
+isActive Boolean — whether hotel is accepting orders
+createdAt Date
+7.3  Tables Collection
+Field Type & Notes
+_id ObjectId
+hotelId ObjectId — ref to Hotels
+tableNumber Number — e.g. 1, 2, 3 ... 20
+capacity Number — seating capacity
+qrCodeUrl String — URL encoded in QR
+status Enum: 'empty' | 'active' | 'awaiting_payment'
+7.4  MenuItems Collection
+Field Type & Notes
+_id ObjectId
+hotelId ObjectId — ref to Hotels
+name String — item name
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+category String — e.g. 'Starters', 'Mains', 'Beverages'
+price Number — in local currency (e.g. INR)
+image String — Cloudinary URL or local path
+description String — short description
+isVeg Boolean — veg / non-veg flag
+isAvailable Boolean — can be toggled off for out-of-stock
+createdAt Date
+7.5  Orders Collection
+Field Type & Notes
+_id ObjectId
+hotelId ObjectId — ref to Hotels
+tableId ObjectId — ref to Tables
+tableNumber Number — denormalised for quick display
+items Array of OrderItem sub-documents (see below)
+total Number — computed sum of all item subtotals
+status Enum: 'new' | 'preparing' | 'ready' | 'served' | 'paid'
+paymentStatus Enum: 'pending' | 'cash' | 'online' | 'paid'
+specialInstructions String — global order notes
+estimatedTime Number — minutes set by chef
+createdAt Date
+updatedAt Date
+OrderItem Sub-document (embedded in Orders)
+Field Type & Notes
+menuItemId ObjectId — ref to MenuItems
+name String — denormalised item name
+qty Number — quantity ordered
+price Number — price at time of order
+notes String — item-level customisation ('no onion', 'extra spicy')
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+7.6  Feedback Collection
+Field Type & Notes
+_id ObjectId
+orderId ObjectId — ref to Orders
+hotelId ObjectId — ref to Hotels
+rating Number — 1 to 5 stars
+comment String — optional text feedback
+createdAt Date
+8. REST API Endpoints
+All API routes are prefixed with /api. Authentication routes are public. All other routes require a valid 
+JWT Bearer token in the Authorization header.
+8.1  Authentication Routes
+Method + Route Auth Required Description
+POST 
+/api/auth/registerNoRegister new hotel owner 
+account
+POST 
+/api/auth/loginNoLogin (owner or staff) — returns 
+JWT
+POST 
+/api/auth/verify-
+emailNo Verify email from token link
+GET /api/auth/me Yes (any) Get current logged-in user profile
+8.2  Menu Routes
+Method + Route Auth Required Description
+GET 
+/api/menu/:hotelIdNo (public)Get full menu for a hotel — used 
+by customer QR page
+POST /api/menu Yes (owner) Add a new menu item
+PUT /api/menu/:id Yes (owner) Edit a menu item
+DELETE 
+/api/menu/:idYes (owner) Delete a menu item
+PATCH Yes (owner) Toggle item availability on/off
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+/api/menu/:id/toggl
+e
+8.3  Order Routes
+Method + Route Auth Required Description
+POST /api/orders No (customer)Place a new order (table number 
+in body)
+GET /api/orders Yes (owner/chef)Get all orders for hotel — filter by 
+status, date
+GET /api/orders/:id Yes (owner/chef) Get single order detail
+PUT 
+/api/orders/:id/statu
+sYes (chef/owner)Update order status (preparing / 
+ready / served)
+PUT 
+/api/orders/:id/pay
+mentYes (cashier/owner)Mark payment status (cash / 
+online / paid)
+8.4  Table Routes
+Method + Route Auth Required Description
+GET /api/tables Yes (owner) List all tables for hotel
+POST /api/tables Yes (owner)Create a new table (auto-
+generate QR)
+DELETE 
+/api/tables/:idYes (owner) Remove a table
+GET 
+/api/tables/:id/qrYes (owner)Download QR code image for a 
+table
+8.5  Staff & Analytics Routes
+Method + Route Auth Required Description
+GET /api/staff Yes (owner) List all staff accounts
+POST /api/staff Yes (owner) Create a staff account
+DELETE 
+/api/staff/:idYes (owner)Remove or deactivate staff 
+account
+GET 
+/api/analytics/sum
+maryYes (owner)Revenue, order count, top items 
+summary
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+GET 
+/api/analytics/heat
+mapYes (owner)Busiest hours data (day × hour 
+matrix)
+POST 
+/api/feedbackNo (customer)Submit star rating + comment for 
+order
+9. Real-Time Socket.io Events
+Socket.io enables instant communication between all three parties — Customer, Admin, and Chef — 
+without any polling or page refresh.
+9.1  Socket Event Reference
+Event Name Emitted By Received By & Action
+new_order Server (on POST /orders)Admin + Chef — play notification 
+sound, render new order card
+order_status_updat
+eServer (on PUT /orders/:id/status)Admin + Customer — update 
+status badge/bar in real-time
+order_ready Server (when status → ready)Waiter + Admin — highlight order  
+card in green
+call_waiter Customer browserAdmin + Waiter dashboard — 
+show alert popup with table 
+number
+payment_confirme
+dServer (on payment route)Admin — mark order as paid, 
+archive from live feed
+table_status_updat
+eServerAdmin — update table status 
+indicator on table grid
+9.2  Socket Room Strategy
+To avoid broadcasting all events to all clients (which wastes bandwidth and exposes data), every 
+connected client joins a private room identified by their hotel ID.
+// On client connection:
+socket.join(`hotel_${hotelId}`);
+// On server emit (only to that hotel's clients):
+io.to(`hotel_${hotelId}`).emit('new_order', orderData);
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+10. Recommended Folder Structure
+10.1  Root Layout
+tabletap/
+  ├── client/          ← React frontend (Vite)
+  ├── server/          ← Node.js + Express backend
+  └── README.md
+10.2  Client (React) Structure
+client/
+  ├── public/
+  │   └── favicon.ico
+  ├── src/
+  │   ├── pages/
+  │   │   ├── LandingPage/       ← public marketing site
+  │   │   ├── CustomerMenu/      ← QR-linked customer UI
+  │   │   ├── Dashboard/         ← unified owner+chef dashboard
+  │   │   │   ├── Overview/
+  │   │   │   ├── LiveOrders/
+  │   │   │   ├── MenuManager/
+  │   │   │   ├── TableManager/
+  │   │   │   ├── StaffManager/
+  │   │   │   ├── Analytics/
+  │   │   │   └── Settings/
+  │   │   └── Auth/
+  │   ├── components/            ← reusable UI components
+  │   │   ├── Navbar/
+  │   │   ├── Sidebar/
+  │   │   ├── OrderCard/
+  │   │   ├── MenuItemCard/
+  │   │   ├── StatusBadge/
+  │   │   └── Modal/
+  │   ├── context/               ← React Context (auth, socket, cart)
+  │   ├── hooks/                 ← custom hooks (useSocket, useOrders)
+  │   ├── services/              ← axios API call wrappers
+  │   ├── utils/                 ← helpers (formatCurrency, dateUtils)
+  │   ├── App.jsx
+  │   └── main.jsx
+  ├── .env
+  └── package.json
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+10.3  Server (Node.js) Structure
+server/
+  ├── src/
+  │   ├── routes/
+  │   │   ├── auth.routes.js
+  │   │   ├── menu.routes.js
+  │   │   ├── order.routes.js
+  │   │   ├── table.routes.js
+  │   │   ├── staff.routes.js
+  │   │   └── analytics.routes.js
+  │   ├── controllers/           ← business logic per route
+  │   ├── models/                ← Mongoose schemas
+  │   │   ├── User.model.js
+  │   │   ├── Hotel.model.js
+  │   │   ├── Table.model.js
+  │   │   ├── MenuItem.model.js
+  │   │   ├── Order.model.js
+  │   │   └── Feedback.model.js
+  │   ├── middleware/
+  │   │   ├── auth.middleware.js  ← JWT verify
+  │   │   ├── role.middleware.js  ← role-based guard
+  │   │   └── error.middleware.js
+  │   ├── socket/
+  │   │   └── socket.handler.js  ← all Socket.io events
+  │   ├── utils/
+  │   │   ├── qrGenerator.js     ← table QR creation
+  │   │   └── generateBill.js    ← bill PDF generation
+  │   └── app.js                 ← Express app setup
+  ├── server.js                  ← entry point, HTTP + Socket.io
+  ├── .env
+  └── package.json
+11. Development Phases (Sprint Plan)
+The project is divided into 5 development sprints. Each sprint builds on the previous and results in a 
+working, testable increment of the system.
+Sprint 1 — Foundation & Auth (Week 1–2)
+•Set up monorepo: /client (Vite + React + Tailwind) and /server (Express + MongoDB)
+•Create all Mongoose models with validation
+•Implement JWT-based registration and login for owners
+•Create staff creation endpoint (owner-only)
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+•Role-based middleware for route protection
+•Basic React Router setup with protected routes
+•Login page and registration form UI
+Sprint 2 — Core Menu & QR System (Week 3–4)
+•Menu CRUD API (add/edit/delete/toggle items with image upload)
+•Category management
+•Table creation API with QR code generation using qrcode npm package
+•QR download as PNG endpoint
+•Customer-facing menu page: /menu?table=X
+•Menu display by category with search and veg/non-veg filter
+•Cart state management (React Context + localStorage)
+Sprint 3 — Ordering & Real-Time (Week 5–6)
+•Order placement API (POST /api/orders)
+•Socket.io setup on server + client
+•'new_order' event emit on order creation
+•Live Orders panel in dashboard — receives and renders incoming orders
+•Chef Kitchen Queue view — orders received in real-time
+•Status update API + 'order_status_update' socket event
+•Customer Order Tracking page with live status bar
+•Call Waiter button + socket alert
+Sprint 4 — Dashboard, Billing & Analytics (Week 7–8)
+•Dashboard Overview with stats cards and charts (recharts / chart.js)
+•Bill auto-generation on order completion
+•Printable receipt view
+•Payment status management (cash / UPI / online)
+•Sales Analytics page — revenue chart, top items, heatmap
+•Feedback collection form + display in dashboard
+•Staff management panel (create/deactivate staff accounts)
+Sprint 5 — Landing Page, Polish & Deploy (Week 9–10)
+•Build the full public Landing Page with all sections
+•Responsive design audit — mobile-first for customer pages
+•Onboarding wizard for new hotel owner registration
+•End-to-end demo flow testing
+•Environment variable setup for production
+•Deploy frontend to Vercel
+•Deploy backend to Render
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+•Connect MongoDB Atlas (cloud)
+•Final bug fixes and performance optimisations
+12. Environment Variables
+12.1  Server (.env)
+PORT=5000
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/tabletap
+JWT_SECRET=your_super_secret_jwt_key_here
+JWT_EXPIRES_IN=7d
+CLIENT_URL=https://your-frontend.vercel.app
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+NODE_ENV=production
+12.2  Client (.env)
+VITE_API_BASE_URL=https://your-backend.render.com/api
+VITE_SOCKET_URL=https://your-backend.render.com
+13. Live Demo Flow (For Presentations)
+Use this script to demonstrate the system end-to-end in under 5 minutes for judges, interviewers, or 
+clients.
+DEMO SCRIPT — Step by Step
+1. Open the TableTap Landing Page → show features and 'Get Started' button
+2. Log in as Hotel Owner → show the unified dashboard overview
+3. Go to Table Manager → show QR codes, click 'Download QR' for Table 5
+4. On a phone, scan the QR → mobile browser opens /menu?table=5
+5. Browse the menu, search for 'Pizza', add 1 Pizza + 1 Mango Juice to cart
+6. Add note 'Extra cheese, less spicy' to Pizza, then Place Order
+7. On the dashboard — admin Live Orders panel flashes with new order card
+8. On chef screen (same dashboard, chef tab) — order appears with sound alert
+9. Chef clicks 'Start Preparing' → status changes to Preparing (orange)
+10. On customer phone — status bar updates to 'Preparing' in real-time
+11. Chef clicks 'Mark Ready' → status turns green
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+12. Admin dashboard shows 'Ready' — waiter alert triggered
+13. Admin marks order as 'Served' → auto-generated bill appears
+14. Show the bill: Table 5, Pizza ×1, Mango Juice ×1, Total 420 ₹
+15. Mark as Paid → order moves to history. Show Analytics chart update.
+14. Advanced / Bonus Features
+These features are optional but will set the project apart in interviews and add real-world commercial 
+value.
+Feature Implementation Notes
+AI RecommendationsOn cart page: 'People also order' — use co-occurrence data from 
+Orders collection to suggest items frequently ordered together
+Offers & CouponsCouponCode model with discount value, expiry, and min-order. 
+Customer applies code at checkout. Admin creates codes in 
+dashboard.
+Repeat Previous 
+OrderStore last order items in browser localStorage. Show 'Order Again' 
+button on menu home.
+WhatsApp BillUse Twilio WhatsApp API or wa.me deeplink to send bill summary 
+to customer's phone number.
+Table ReservationReservation model with date, time, party size. Admin views 
+reservation calendar. Customers book via landing page.
+Loyalty PointsAward 1 point per 10 spent. Store in User model. Redeem at ₹
+checkout for discount.
+Print ReceiptUse browser window.print() with a print-optimised CSS media 
+query for the bill view.
+Inventory AlertTrack stock count per menu item. Alert admin when stock falls 
+below a threshold.
+Multi-Language MenuUse i18next for React. Store item names in multiple languages in 
+MenuItem model.
+15. Security Checklist
+  Passwords hashed with bcrypt (salt rounds: 12) — never stored plain✅
+  JWT signed with strong secret, expires in 7 days✅
+  Role-based middleware on every protected route✅
+  Hotel ID injected from JWT — staff cannot access another hotel's data✅
+  Input validation with express-validator on all POST/PUT routes✅
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+  File upload type-checking — only images allowed for menu items✅
+  CORS configured to allow only the registered frontend domain✅
+  Rate limiting with express-rate-limit on auth routes (prevent brute force)✅
+  Helmet.js middleware for secure HTTP headers✅
+  Environment variables for all secrets — never commit .env to GitHub✅
+16. Deployment Guide
+16.1  Frontend — Vercel
+14.Push /client folder to GitHub
+15.Go to vercel.com → New Project → Import the client repo
+16.Set environment variables (VITE_API_BASE_URL, VITE_SOCKET_URL)
+17.Deploy — Vercel auto-builds with Vite
+18.Custom domain optional: e.g. tabletap.in
+16.2  Backend — Render
+19.Push /server folder to GitHub
+20.Go to render.com → New Web Service → Connect repo
+21.Set build command: npm install
+22.Set start command: node server.js
+23.Add all .env variables in Render's Environment settings
+24.Deploy — Render gives a public HTTPS URL
+16.3  Database — MongoDB Atlas
+25.Create a free M0 cluster at cloud.mongodb.com
+26.Create database user with read/write access
+27.Whitelist all IPs (0.0.0.0/0) or Render's static IPs
+28.Copy the connection string → paste as MONGODB_URI in Render env
+17. Testing Strategy
+17.1  Manual Testing Scenarios
+•Customer can scan QR, view menu, add items to cart, and place an order
+•Admin receives order in real-time without page refresh
+•Chef receives same order simultaneously on kitchen view
+•Order status changes (Preparing → Ready → Served) reflect on all screens
+•Owner can add/edit/delete menu items and changes appear on customer menu instantly
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+•Staff accounts created by owner can log in with correct role-based view
+•QR codes download correctly and encode the right URL
+•Bill generates correctly with all ordered items and quantities
+•Analytics page reflects new order data in charts
+17.2  Tools for Testing
+•Postman — API endpoint testing with JWT auth headers
+•React DevTools — component state inspection
+•Chrome DevTools Network tab — Socket.io event monitoring
+•MongoDB Compass — direct database record inspection
+•Multiple browser tabs — simulate concurrent customer + admin + chef sessions
+18. Project Name & Branding Recommendation
+Recommended Name:   TableTap
+Tagline:  Scan. Order. Done.
+Brand Colours:
+  Primary:  #1B4F72  (Deep Navy Blue)
+  Accent:   #2E86C1  (Bright Blue)
+  Success:  #1E8449  (Green — order ready)
+  Warning:  #B7770D  (Amber — preparing)
+  Background: #F8FAFC (Off-white)
+Logo Concept:  A fork + QR code icon, minimal and modern.
+Alternative Names:   SmartServe  /  QRDine  /  Scan2Eat  /  QuickBite POS
+19. Summary & Final Checklist
+What makes this project stand out
+•Real-world problem with immediate commercial viability
+•Clean role-based architecture — professional software design pattern
+•Real-time WebSocket integration — a feature many final-year projects skip
+•Single, unified dashboard eliminates the complexity of managing multiple apps
+•QR workflow is intuitive and requires no customer registration whatsoever
+•Full-stack project covering frontend, backend, database, auth, and DevOps
+Confidential  |  Final Year Project  |  TableTap v1.0
+TableTap — Smart QR Restaurant Ordering System Project Documentation v1.0
+Minimum Viable Product (MVP) Checklist
+•Landing page with hotel owner registration
+•Owner dashboard: menu management + table + QR management
+•Chef view: live order queue with status buttons
+•Customer menu page: browse, cart, place order
+•Real-time order flow (Socket.io)
+•Auto bill generation
+•Deployed and accessible via public URL
+Bro, if you build this properly — this can become a real startup product.
+Start with the MVP, get it working end-to-end, then layer in the advanced features.
+Let's vibe-code this thing 🚀
+— End of TableTap Project Documentation —
+Confidential  |  Final Year Project  |  TableTap v1.0
