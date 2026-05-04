@@ -2,7 +2,7 @@ const { initializeApp } = require('firebase/app');
 const { getAuth, sendPasswordResetEmail } = require('firebase/auth');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDS6mQzurVkaSFkUn1K8xzJNZNhDNOmM3I',
+  apiKey: FIREBASE_API_KEY,
   authDomain: 'tabletap-dine.firebaseapp.com',
   projectId: 'tabletap-dine',
   storageBucket: 'tabletap-dine.firebasestorage.app',
