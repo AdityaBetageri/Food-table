@@ -1,4 +1,5 @@
-const apiKey = 'AIzaSyDS6mQzurVkaSFkUn1K8xzJNZNhDNOmM3I';
+require('dotenv').config();
+const apiKey = process.env.FIREBASE_API_KEY;
 const email = 'test@example.com';
 
 async function testReset() {

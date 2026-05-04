@@ -6,7 +6,7 @@ const {
 } = require('../db/firebase');
 const { sendPasswordResetEmail } = require('firebase/auth');
 
-const FIREBASE_API_KEY = 'AIzaSyDS6mQzurVkaSFkUn1K8xzJNZNhDNOmM3I';
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
 /**
  * Helper to call Firebase Auth REST API

@@ -17,13 +17,13 @@ const {
 const { getAuth } = require('firebase/auth');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDS6mQzurVkaSFkUn1K8xzJNZNhDNOmM3I',
-  authDomain: 'tabletap-dine.firebaseapp.com',
-  projectId: 'tabletap-dine',
-  storageBucket: 'tabletap-dine.firebasestorage.app',
-  messagingSenderId: '578759018710',
-  appId: '1:578759018710:web:660995f664f035d8a72177',
-  measurementId: 'G-W7DMDQCNCP',
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'tabletap-dine.firebaseapp.com',
+  projectId: process.env.FIREBASE_PROJECT_ID || 'tabletap-dine',
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'tabletap-dine.firebasestorage.app',
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '578759018710',
+  appId: process.env.FIREBASE_APP_ID || '1:578759018710:web:660995f664f035d8a72177',
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-W7DMDQCNCP',
 };
 
 // Initialize Firebase
