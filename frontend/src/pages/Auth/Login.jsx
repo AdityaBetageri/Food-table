@@ -31,7 +31,7 @@ export default function Login() {
     try {
       const res = await forgotPassword(email);
       setApprovalStatus('updated');
-      setApprovalMessage(res.message || 'Password reset email sent.');
+      setApprovalMessage(res.message || 'Password reset email sent. Please check your email');
     } catch (err) {
       setError(err.message || 'Failed to send password reset email.');
     } finally {
