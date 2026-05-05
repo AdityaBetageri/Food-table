@@ -1,2 +1,35 @@
+# Dependencies
 node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Environment variables
 .env
+backend/.env
+frontend/.env
+
+# Build outputs
+dist/
+frontend/dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Firebase
+.firebase/
+firebase-debug.log*
+.firebaserc
+
+# Other
+npm
+pdf_content.txt
+generate_react_files.py
+read_pdf.py

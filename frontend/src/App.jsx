@@ -18,6 +18,7 @@ import Analytics from './pages/Dashboard/Analytics';
 import Settings from './pages/Dashboard/Settings';
 import NotFound from './pages/NotFound';
 import ManagementDashboard from './pages/ManagementDashboard';
+import ManagementLogin from './pages/ManagementDashboard/ManagementLogin';
 
 // Legal Pages
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
@@ -53,6 +54,7 @@ function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-and-conditions" element={<Terms />} />
               <Route path="/cookies-policy" element={<CookiesPolicy />} />
+              <Route path="/management/login" element={<ManagementLogin />} />
               <Route path="/management" element={<ManagementDashboard />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<Overview />} />

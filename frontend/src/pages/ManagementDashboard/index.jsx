@@ -4,7 +4,7 @@ import {
   Building2, Users, ShieldCheck, TrendingUp, CheckCircle2,
   XCircle, Clock, Search, ArrowLeft, Activity,
   ChevronDown, AlertCircle, Bell, Mail, Loader2, X,
-  BarChart3, Hotel, Globe, Ban, UserCheck, Eye
+  BarChart3, Hotel, Globe, Ban, UserCheck, Eye, LogOut
 } from 'lucide-react';
 import api from '../../services/api';
 import './styles.css';
@@ -331,7 +331,34 @@ export default function ManagementDashboard() {
   const [showNotif, setShowNotif] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [admin, setAdmin] = useState(null);
   const navigate = useNavigate();
+
+  // ─── Auth Guard: verify management session on mount ───
+  useEffect(() => {
+    const token = localStorage.getItem('mgmt_token');
+    if (!token) {
+      navigate('/management/login', { replace: true });
+      return;
+    }
+    api.managementAuth.getMe()
+      .then((data) => {
+        setAdmin(data.admin);
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        localStorage.removeItem('mgmt_token');
+        localStorage.removeItem('mgmt_admin');
+        navigate('/management/login', { replace: true });
+      });
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('mgmt_token');
+    localStorage.removeItem('mgmt_admin');
+    navigate('/management/login', { replace: true });
+  };
 
   const changeStatus = async (id, newStatus) => {
     setLoadingId(`change-${id}-${newStatus}`);
@@ -375,8 +402,8 @@ export default function ManagementDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (authChecked) fetchData();
+  }, [authChecked]);
 
   const fetchData = async () => {
     try {
@@ -396,13 +423,25 @@ export default function ManagementDashboard() {
     }
   };
 
+  // Show nothing while verifying auth
+  if (!authChecked) {
+    return (
+      <div className="mgmt-page">
+        <div className="mgmt-loading" style={{ minHeight: '100vh' }}>
+          <Loader2 size={40} className="mgmt-spinner" />
+          <p>Verifying management access...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mgmt-page">
       <header className="mgmt-header">
         <div className="mgmt-header-left">
-          <button className="mgmt-back" onClick={() => navigate('/')} id="mgmt-back-btn"><ArrowLeft size={18} /></button>
+          <button className="mgmt-back" onClick={() => navigate('/management')} id="mgmt-back-btn"><img src="./assets/logo.png" alt="logo" size={18} /></button>
           <div>
-            <h1 className="mgmt-title">Management Dashboard</h1>
+            <button><h1 className="mgmt-title" onClick={() => navigate('/management')}>Management Dashboard</h1></button>
             <p className="mgmt-subtitle">Platform administration & hotel oversight</p>
           </div>
         </div>
@@ -417,7 +456,16 @@ export default function ManagementDashboard() {
             <Bell size={18} />
             {accessRequests.length > 0 && <span className="mgmt-notif-dot">{accessRequests.length}</span>}
           </button>
-          <span className="mgmt-admin-tag"><ShieldCheck size={14} /> Platform Admin</span>
+          <span className="mgmt-admin-tag"><ShieldCheck size={14} /> {admin?.name || 'Platform Admin'}</span>
+          <button
+            className="mgmt-logout-btn"
+            onClick={handleLogout}
+            title="Logout"
+            id="mgmt-logout-btn"
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </button>
         </div>
       </header>
 

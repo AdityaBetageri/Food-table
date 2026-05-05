@@ -92,9 +92,55 @@ export default function TableManager() {
     try {
       setDownloadingQR(table._id);
       const data = await tableAPI.getQR(table._id);
+      
+      const loadImage = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+
+      // Load both images
+      const [qrImg, logoImg] = await Promise.all([
+        loadImage(data.qrCodeData),
+        loadImage('/assets/logo.png').catch(() => null) // Fallback if logo fails
+      ]);
+
+      if (!logoImg) {
+        // Fallback to original if logo not found
+        const link = document.createElement('a');
+        link.href = data.qrCodeData;
+        link.download = `Table-${table.tableNumber}-QR.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = qrImg.width;
+      canvas.height = qrImg.height;
+      const ctx = canvas.getContext('2d');
+
+      // Draw QR
+      ctx.drawImage(qrImg, 0, 0);
+
+      // Logo settings
+      const logoSize = canvas.width * 0.22;
+      const x = (canvas.width - logoSize) / 2;
+      const y = (canvas.height - logoSize) / 2;
+
+      // White background for logo
+      ctx.fillStyle = 'white';
+      ctx.fillRect(x - 4, y - 4, logoSize + 8, logoSize + 8);
+
+      // Draw logo
+      ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+
       const link = document.createElement('a');
-      link.href = data.qrCodeData;
-      link.download = `Table-${table.tableNumber}-QR.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.download = `Table-${table.tableNumber}-QR-Branded.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

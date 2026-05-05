@@ -26,25 +26,12 @@ exports.create = async (req, res, next) => {
           const updatedItems = [...activeOrder.items];
           
           items.forEach(newItem => {
-            // Find if item already exists (matching by menuItemId OR name)
-            const existingItemIndex = updatedItems.findIndex(i => 
-              (i.menuItemId && i.menuItemId === newItem.menuItemId) || 
-              (i.name.toLowerCase() === newItem.name.toLowerCase())
-            );
-            
-            if (existingItemIndex > -1) {
-              // Update quantity of existing item
-              updatedItems[existingItemIndex].qty += newItem.qty;
-              // Update timestamp
-              updatedItems[existingItemIndex].updatedAt = new Date().toISOString();
-            } else {
-              // Add as new line item
-              updatedItems.push({ 
-                ...newItem, 
-                isAddition: true, 
-                addedAt: new Date().toISOString() 
-              });
-            }
+            // Always add as a new line item for additions to help the chef identify new orders
+            updatedItems.push({ 
+              ...newItem, 
+              isAddition: true, 
+              addedAt: new Date().toISOString() 
+            });
           });
 
           await updateDoc(orderRef, {
@@ -187,6 +174,14 @@ exports.updateStatus = async (req, res, next) => {
       updates.paymentStatus = 'paid';
     }
 
+    // Clear 'isAddition' flag from items and reset 'isUpdated' when moving away from 'new' status
+    // This ensures that only actually new items in the next update will have the 'NEW' badge
+    if (status !== 'new') {
+      const items = snap.data().items || [];
+      updates.items = items.map(item => ({ ...item, isAddition: false }));
+      updates.isUpdated = false;
+    }
+
     await updateDoc(ref, updates);
     const order = docToObj(await getDoc(ref));
 
@@ -247,6 +242,11 @@ exports.updatePayment = async (req, res, next) => {
     const updates = { paymentStatus, updatedAt: new Date().toISOString() };
     if (['cash', 'online', 'paid'].includes(paymentStatus)) {
       updates.status = 'paid';
+      
+      // Clear 'isAddition' flag from items and reset 'isUpdated' when order is finalized
+      const items = snap.data().items || [];
+      updates.items = items.map(item => ({ ...item, isAddition: false }));
+      updates.isUpdated = false;
     }
 
     await updateDoc(ref, updates);

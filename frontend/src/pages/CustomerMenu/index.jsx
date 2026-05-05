@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { orderAPI, feedbackAPI, menuAPI } from '../../services/api';
 import { useSocketContext } from '../../context/SocketContext';
+import { groupOrderItems } from '../../utils/orderUtils';
 
 export default function CustomerMenu() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -288,7 +289,12 @@ export default function CustomerMenu() {
         <div style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
 
           {feedbackSubmitted ? (
-            <div style={{ background: '#fff', padding: '40px 20px', borderRadius: '20px', boxShadow: '0 8px 30px rgba(0,0,0,.08)', animation: 'orderFadeIn .5s ease' }}>
+            <div style={{ position: 'relative', background: '#fff', padding: '40px 20px', borderRadius: '20px', boxShadow: '0 8px 30px rgba(0,0,0,.08)', animation: 'orderFadeIn .5s ease' }}>
+              {placedOrderDetails?.orderNumber && (
+                <div style={{ position: 'absolute', top: '20px', right: '20px', fontSize: '13px', fontWeight: 800, color: '#2E86C1', background: '#EBF8FF', padding: '6px 12px', borderRadius: '10px', border: '1px solid #AED6F1' }}>
+                  Your order ID is: #{placedOrderDetails.orderNumber.toString().padStart(3, '0')}
+                </div>
+              )}
               <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
               <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#1B4F72', marginBottom: '12px' }}>Thank you!</h2>
               <p style={{ color: '#64748B', fontSize: '15px', marginBottom: '12px', lineHeight: '1.5' }}>We value your feedback, if there is anything you want to share please contact us. Please visit us again!</p>
@@ -309,9 +315,14 @@ export default function CustomerMenu() {
                     <ReceiptText size={18} /> Final Bill {placedOrderDetails.orderNumber && `#${placedOrderDetails.orderNumber.toString().padStart(3, '0')}`}
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {placedOrderDetails.items.map((item, idx) => (
+                    {groupOrderItems(placedOrderDetails.items).map((item, idx) => (
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
-                        <span>{item.qty}x {item.name}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {item.qty}x {item.name}
+                          {item.isAddition && (
+                            <span style={{ fontSize: '9px', background: '#FFF9C4', color: '#F57F17', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #FBC02D' }}>NEW</span>
+                          )}
+                        </span>
                         <span style={{ fontWeight: 600 }}>{formatCurrency(item.price * item.qty)}</span>
                       </div>
                     ))}
@@ -351,7 +362,12 @@ export default function CustomerMenu() {
               )}
 
               {/* Timeline */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0', textAlign: 'left', background: '#fff', borderRadius: '16px', padding: '20px 24px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', marginBottom: '20px' }}>
+              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '0', textAlign: 'left', background: '#fff', borderRadius: '16px', padding: '20px 24px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', marginBottom: '20px' }}>
+                {placedOrderDetails?.orderNumber && (
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '12px', fontWeight: 800, color: '#2E86C1', background: '#EBF8FF', padding: '4px 10px', borderRadius: '8px' }}>
+                    Your order ID is: #{placedOrderDetails.orderNumber.toString().padStart(3, '0')}
+                  </div>
+                )}
                 {ORDER_STAGES.map((s, i) => {
                   const done = i < orderStage;
                   const active = i === orderStage;

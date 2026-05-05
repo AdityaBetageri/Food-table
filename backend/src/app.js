@@ -12,6 +12,7 @@ const staffRoutes = require('./routes/staff.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const managementRoutes = require('./routes/management.routes');
+const managementAuthRoutes = require('./routes/managementAuth.routes');
 const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/tables', tableRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/management/auth', managementAuthRoutes);
 app.use('/api/management', managementRoutes);
 
 // Health check

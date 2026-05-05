@@ -21,7 +21,8 @@ exports.create = async (req, res, next) => {
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const qrUrl = `${clientUrl}/menu?table=${tableNumber}&hotel=${req.user.hotelId}`;
     const qrCodeData = await QRCode.toDataURL(qrUrl, {
-      width: 400, margin: 2, color: { dark: '#1B4F72', light: '#FFFFFF' }
+      width: 400, margin: 2, color: { dark: '#1B4F72', light: '#FFFFFF' },
+      errorCorrectionLevel: 'H'
     });
 
     const data = {
@@ -76,7 +77,8 @@ exports.getQR = async (req, res, next) => {
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
       const qrUrl = `${clientUrl}/menu?table=${table.tableNumber}&hotel=${req.user.hotelId}`;
       const qrCodeData = await QRCode.toDataURL(qrUrl, {
-        width: 400, margin: 2, color: { dark: '#1B4F72', light: '#FFFFFF' }
+        width: 400, margin: 2, color: { dark: '#1B4F72', light: '#FFFFFF' },
+        errorCorrectionLevel: 'H'
       });
       await updateDoc(ref, { qrCodeUrl: qrUrl, qrCodeData });
       table.qrCodeUrl = qrUrl;

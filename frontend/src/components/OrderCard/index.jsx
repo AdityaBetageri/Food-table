@@ -4,6 +4,8 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { timeAgo } from '../../utils/dateUtils';
 import { ChefHat, CheckCircle, Truck, CreditCard, StickyNote, Loader2 } from 'lucide-react';
 
+import { groupOrderItems } from '../../utils/orderUtils';
+
 const statusActions = {
   new: { label: 'Start Preparing', next: 'preparing', color: '#F39C12', Icon: ChefHat },
   preparing: { label: 'Mark Ready', next: 'ready', color: '#27AE60', Icon: CheckCircle },
@@ -19,6 +21,8 @@ export default function OrderCard({ order, onStatusChange, showActions = true })
   const { _id, tableNumber, orderNumber, items = [], total, status, createdAt, specialInstructions, isUpdated } = order;
   const action = statusActions[status];
   const [isLoading, setIsLoading] = useState(false);
+
+  const displayItems = groupOrderItems(items);
 
   const handleStatusChange = async (orderId, next) => {
     setIsLoading(true);
@@ -58,8 +62,8 @@ export default function OrderCard({ order, onStatusChange, showActions = true })
 
       {/* Items */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
-        {items.map((item, idx) => (
-          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx < items.length - 1 ? '1px dashed #EDF2F7' : 'none' }}>
+        {displayItems.map((item, idx) => (
+          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx < displayItems.length - 1 ? '1px dashed #EDF2F7' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -87,12 +87,44 @@ export const feedbackAPI = {
 };
 
 // ==================== Management API ====================
+/**
+ * Separate request wrapper for management endpoints
+ * Uses mgmt_token instead of tabletap_token
+ */
+async function mgmtRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('mgmt_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || `Request failed: ${res.status}`);
+  }
+
+  return data;
+}
+
+export const managementAuthAPI = {
+  login: (body) => mgmtRequest('/management/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  getMe: () => mgmtRequest('/management/auth/me'),
+  register: (body) => mgmtRequest('/management/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+};
+
 export const managementAPI = {
-  getData: () => request('/management/data'),
-  updateStatus: (id, status) => request(`/management/hotel/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-  getAccessRequests: () => request('/management/access-requests'),
-  approveRequest: (id) => request(`/management/access-requests/${id}/approve`, { method: 'PATCH' }),
-  denyRequest: (id) => request(`/management/access-requests/${id}/deny`, { method: 'PATCH' }),
+  getData: () => mgmtRequest('/management/data'),
+  updateStatus: (id, status) => mgmtRequest(`/management/hotel/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getAccessRequests: () => mgmtRequest('/management/access-requests'),
+  approveRequest: (id) => mgmtRequest(`/management/access-requests/${id}/approve`, { method: 'PATCH' }),
+  denyRequest: (id) => mgmtRequest(`/management/access-requests/${id}/deny`, { method: 'PATCH' }),
 };
 
 export const api = {
@@ -104,6 +136,7 @@ export const api = {
   analytics: analyticsAPI,
   feedback: feedbackAPI,
   management: managementAPI,
+  managementAuth: managementAuthAPI,
 };
 
 export default api;

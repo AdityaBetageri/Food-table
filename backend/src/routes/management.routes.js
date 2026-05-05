@@ -1,14 +1,16 @@
 const router = require('express').Router();
 const managementController = require('../controllers/management.controller');
+const managementAuth = require('../middleware/managementAuth.middleware');
 
-// Platform Management — open access for admin dashboard
-// In production, this should use a separate admin authentication system
-router.get('/data', managementController.getData);
-router.patch('/hotel/:id/status', managementController.updateHotelStatus);
+// All management data routes are now protected by management auth middleware
+// Only authenticated admins from the 'admins' collection can access these
+
+router.get('/data', managementAuth, managementController.getData);
+router.patch('/hotel/:id/status', managementAuth, managementController.updateHotelStatus);
 
 // Access Requests
-router.get('/access-requests', managementController.getAccessRequests);
-router.patch('/access-requests/:id/approve', managementController.approveRequest);
-router.patch('/access-requests/:id/deny', managementController.denyRequest);
+router.get('/access-requests', managementAuth, managementController.getAccessRequests);
+router.patch('/access-requests/:id/approve', managementAuth, managementController.approveRequest);
+router.patch('/access-requests/:id/deny', managementAuth, managementController.denyRequest);
 
 module.exports = router;
