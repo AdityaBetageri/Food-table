@@ -20,6 +20,7 @@
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-extended.css">
 </head>
 
 <body>
@@ -725,13 +726,15 @@
                                 <input type="tel" id="owner-phone" placeholder="+91 9876543210" required>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="owner-city">City</label>
-                            <input type="text" id="owner-city" placeholder="Mumbai" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="owner-password">Password</label>
-                            <input type="password" id="owner-password" placeholder="Create a strong password" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="owner-city">City</label>
+                                <input type="text" id="owner-city" placeholder="Mumbai" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="owner-password">Password</label>
+                                <input type="password" id="owner-password" placeholder="Create a strong password" required>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-register-submit">
                             <span>Create My Restaurant</span>

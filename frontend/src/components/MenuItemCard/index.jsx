@@ -52,25 +52,25 @@ export default function MenuItemCard({ item, cartQty = 0, onIncrease, onDecrease
         {description && !compact && (
           <p style={{ fontSize: '13px', color: '#718096', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 }}>{description}</p>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '8px' }}>
-          <span style={{ fontSize: '17px', fontWeight: 800, color: '#1B4F72' }}>{formatCurrency(price)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '8px', flexWrap: 'wrap', gap: '8px' }}>
+          <span style={{ fontSize: '16px', fontWeight: 800, color: '#1B4F72' }}>{formatCurrency(price)}</span>
           
           {isAvailable && !hideAddButton && (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {cartQty > 0 ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', borderRadius: '10px', padding: '4px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F8FAFC', borderRadius: '8px', padding: '4px', border: '1px solid #E2E8F0' }}>
                   <button
                     onClick={(e) => { e.stopPropagation(); onDecrease(); }}
-                    style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#fff', border: '1px solid #E2E8F0', color: '#1B4F72', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                    style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#fff', border: '1px solid #E2E8F0', color: '#1B4F72', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = '#FEE2E2'}
                     onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
                   >
                     <Minus size={14} />
                   </button>
-                  <span style={{ fontSize: '14px', fontWeight: 800, minWidth: '18px', textAlign: 'center', color: '#1B4F72' }}>{cartQty}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 800, minWidth: '16px', textAlign: 'center', color: '#1B4F72' }}>{cartQty}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); onIncrease(); }}
-                    style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#1B4F72', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                    style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#1B4F72', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
@@ -81,10 +81,10 @@ export default function MenuItemCard({ item, cartQty = 0, onIncrease, onDecrease
                 <button
                   onClick={(e) => { e.stopPropagation(); onIncrease(); }}
                   style={{
-                    padding: '6px 16px', borderRadius: '10px',
+                    padding: '6px 12px', borderRadius: '8px',
                     background: 'linear-gradient(135deg, #1B4F72, #2E86C1)', color: '#fff',
                     fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer',
-                    transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '6px',
+                    transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px',
                     boxShadow: '0 4px 12px rgba(27, 79, 114, 0.2)'
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}

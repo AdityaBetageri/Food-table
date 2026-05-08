@@ -7,7 +7,6 @@ const TABS = [
   { key: '', label: 'All Orders', Icon: Package },
   { key: 'new', label: 'New', Icon: Circle },
   { key: 'preparing', label: 'Preparing', Icon: Clock },
-  { key: 'ready', label: 'Ready', Icon: CheckCircle },
 ];
 
 export default function LiveOrders() {

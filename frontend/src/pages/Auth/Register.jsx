@@ -212,13 +212,21 @@ export default function Register() {
         </div>
         <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: '16px', padding: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
           {error && <div style={{ padding: '10px 14px', borderRadius: '8px', background: '#FEE2E2', color: '#DC2626', fontSize: '13px', marginBottom: '16px', fontWeight: 500 }}>{error}</div>}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            {fields.map(f => (
-              <div key={f.key} className="form-group" style={{ gridColumn: f.key === 'city' || f.key === 'password' ? 'span 2' : undefined }}>
+          <div className="grid-2">
+            {fields.filter(f => f.key !== 'city' && f.key !== 'password').map(f => (
+              <div key={f.key} className="form-group">
                 <label className="form-label">{f.label}</label>
                 <input className="form-input" type={f.type} value={form[f.key]} onChange={e => update(f.key, e.target.value)} placeholder={f.placeholder} required />
               </div>
             ))}
+            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {fields.filter(f => f.key === 'city' || f.key === 'password').map(f => (
+                <div key={f.key} className="form-group">
+                  <label className="form-label">{f.label}</label>
+                  <input className="form-input" type={f.type} value={form[f.key]} onChange={e => update(f.key, e.target.value)} placeholder={f.placeholder} required />
+                </div>
+              ))}
+            </div>
           </div>
           <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center', marginTop: '24px' }} disabled={loading}>
             {loading ? 'Submitting Request...' : <><span>Register & Request Access</span> <ArrowRight size={16} /></>}

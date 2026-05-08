@@ -8,13 +8,12 @@ import { groupOrderItems } from '../../utils/orderUtils';
 
 const statusActions = {
   new: { label: 'Start Preparing', next: 'preparing', color: '#F39C12', Icon: ChefHat },
-  preparing: { label: 'Mark Ready', next: 'ready', color: '#27AE60', Icon: CheckCircle },
-  ready: { label: 'Mark Served', next: 'served', color: '#95A5A6', Icon: Truck },
+  preparing: { label: 'Mark Served', next: 'served', color: '#27AE60', Icon: Truck },
   served: { label: 'Mark Paid', next: 'paid', color: '#2C3E50', Icon: CreditCard },
 };
 
 const borderColors = {
-  new: '#3498DB', preparing: '#F39C12', ready: '#27AE60', served: '#95A5A6', paid: '#2C3E50',
+  new: '#3498DB', preparing: '#F39C12', served: '#95A5A6', paid: '#2C3E50',
 };
 
 export default function OrderCard({ order, onStatusChange, showActions = true }) {
@@ -35,12 +34,21 @@ export default function OrderCard({ order, onStatusChange, showActions = true })
 
   return (
     <div
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && showActions && action && onStatusChange && !isLoading) {
+          handleStatusChange(_id, action.next);
+        }
+      }}
       style={{
         background: '#fff', borderRadius: '14px', border: '1px solid #E2E8F0',
         borderLeft: `4px solid ${borderColors[status] || '#E2E8F0'}`,
         padding: '18px', transition: 'all 0.25s ease',
         animation: status === 'new' ? 'fadeIn 0.4s ease' : 'none',
+        outline: 'none', cursor: 'default'
       }}
+      onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(46,134,193,0.3)'; }}
+      onBlur={(e) => { e.currentTarget.style.boxShadow = ''; }}
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.08)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ''; }}
     >
