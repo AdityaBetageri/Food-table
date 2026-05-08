@@ -53,7 +53,7 @@ export default function LiveOrders() {
           <div className="empty-state-desc">Orders will appear here in real-time when customers place them.</div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+        <div className="dashboard-orders-grid">
           {displayOrders.map(order => (
             <OrderCard key={order._id} order={order} onStatusChange={updateOrderStatus} />
           ))}

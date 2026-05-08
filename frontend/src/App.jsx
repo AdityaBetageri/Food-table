@@ -28,13 +28,40 @@ import CookiesPolicy from './pages/Legal/CookiesPolicy';
 // Components
 import Sidebar from './components/Sidebar';
 
+import { Menu, UtensilsCrossed } from 'lucide-react';
+
 function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <main style={{ flex: 1, marginLeft: collapsed ? '72px' : '260px', padding: '28px', transition: 'margin-left .3s ease', background: '#F8FAFC', minHeight: '100vh' }}>
-        <Outlet />
+    <div className="dashboard-layout">
+      {/* Mobile Overlay */}
+      <div 
+        className={`dashboard-mobile-overlay ${mobileOpen ? 'open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+      
+      <Sidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)} 
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
+      
+      <main className={`dashboard-main ${collapsed ? 'collapsed' : ''}`}>
+        <div className="mobile-header-bar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4F72', fontWeight: 800, fontSize: '20px', fontFamily: "'Outfit',sans-serif" }}>
+            <UtensilsCrossed size={20} style={{ color: '#5DADE2' }} />
+            <span>Table<span style={{ color: '#5DADE2' }}>Tap</span></span>
+          </div>
+          <button className="hamburger-btn" onClick={() => setMobileOpen(true)}>
+            <Menu size={24} />
+          </button>
+        </div>
+        <div className="dashboard-content">
+          <Outlet context={{ setMobileOpen }} />
+        </div>
       </main>
     </div>
   );

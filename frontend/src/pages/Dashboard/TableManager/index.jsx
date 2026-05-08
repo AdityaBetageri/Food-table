@@ -188,7 +188,7 @@ export default function TableManager() {
         })}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+      <div className="dashboard-table-grid">
         {tables.map(table => {
           const sc = statusConfig[table.status] || statusConfig.empty;
           return (

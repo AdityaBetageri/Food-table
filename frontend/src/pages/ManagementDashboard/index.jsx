@@ -185,7 +185,7 @@ function ControlTab({ hotels, setHotels, accessRequests, log, changeStatus, load
       <div className="mgmt-card">
         <div className="mgmt-card-hdr">
           <h3 className="mgmt-card-title"><ShieldCheck size={18} style={{ color: '#2E86C1' }} /> Hotel Access Control</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="mgmt-filters-wrap">
             <div className="mgmt-filters">
               {['all', 'active', 'pending', 'blocked'].map(f => (
                 <button key={f} className={`mgmt-filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} ({f === 'all' ? hotels.length : hotels.filter(h => h.status === f).length})</button>
@@ -247,7 +247,7 @@ function AnalyticsTab({ hotels, dailyPlatform, hotelDailyActivity }) {
         <StatCard label="Conversion" value={`${((totalO / totalV) * 100).toFixed(1)}%`} Icon={UserCheck} color="#E67E22" change="Visitor → order" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
+      <div className="mgmt-charts-grid">
         {/* Platform Bar Chart */}
         <div className="mgmt-card">
           <h3 className="mgmt-card-title"><BarChart3 size={18} style={{ color: '#2E86C1' }} /> Platform Usage Trends</h3>
@@ -332,7 +332,14 @@ export default function ManagementDashboard() {
   const [loadingId, setLoadingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-  const [admin, setAdmin] = useState(null);
+  const [admin, setAdmin] = useState(() => {
+    try {
+      const saved = localStorage.getItem('mgmt_admin');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const navigate = useNavigate();
 
   // ─── Auth Guard: verify management session on mount ───
@@ -445,7 +452,7 @@ export default function ManagementDashboard() {
             <p className="mgmt-subtitle">Platform administration & hotel oversight</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="mgmt-header-right">
           <button
             className="mgmt-notif-btn"
             onClick={() => setShowNotif(true)}
@@ -456,7 +463,10 @@ export default function ManagementDashboard() {
             <Bell size={18} />
             {accessRequests.length > 0 && <span className="mgmt-notif-dot">{accessRequests.length}</span>}
           </button>
-          <span className="mgmt-admin-tag"><ShieldCheck size={14} /> {admin?.name || 'Platform Admin'}</span>
+          <span className="mgmt-admin-tag">
+            <ShieldCheck size={14} /> 
+            <span style={{ marginLeft: 2 }}>{admin?.name ? `Hi, ${admin.name}` : 'Platform Admin'}</span>
+          </span>
           <button
             className="mgmt-logout-btn"
             onClick={handleLogout}
@@ -464,7 +474,7 @@ export default function ManagementDashboard() {
             id="mgmt-logout-btn"
           >
             <LogOut size={16} />
-            <span>Logout</span>
+            <span className="mgmt-logout-text">Logout</span>
           </button>
         </div>
       </header>

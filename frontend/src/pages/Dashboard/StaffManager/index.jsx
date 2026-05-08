@@ -89,7 +89,7 @@ export default function StaffManager() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px', color: '#A0AEC0' }}>Loading staff...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+        <div className="dashboard-staff-grid">
           {staff.map(s => {
             const rc = roleConfig[s.role] || roleConfig.waiter;
             const { Icon } = rc;
@@ -134,7 +134,7 @@ export default function StaffManager() {
             <label style={{ fontSize: '13px', fontWeight: 700, color: '#4A5568' }}>Email Address</label>
             <input required type="email" style={inputStyle} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="e.g. john@hotel.com" onFocus={e => e.target.style.borderColor = '#2E86C1'} onBlur={e => e.target.style.borderColor = '#E2E8F0'} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="grid-2" style={{ gap: '12px' }}>
             <div>
               <label style={{ fontSize: '13px', fontWeight: 700, color: '#4A5568' }}>Password</label>
               <input required type="password" style={inputStyle} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="Min 6 chars" onFocus={e => e.target.style.borderColor = '#2E86C1'} onBlur={e => e.target.style.borderColor = '#E2E8F0'} />

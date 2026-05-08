@@ -21,15 +21,20 @@ const LINKS = {
   cashier: [{ path: '/dashboard/orders', label: 'Orders', Icon: ShoppingCart }],
 };
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const links = LINKS[user?.role] || LINKS.owner;
-  const w = collapsed ? '72px' : '260px';
+
+  const handleLinkClick = () => {
+    if (mobileOpen && setMobileOpen) {
+      setMobileOpen(false);
+    }
+  };
 
   return (
-    <aside style={{ width: w, height: '100vh', background: '#1E293B', color: '#E2E8F0', display: 'flex', flexDirection: 'column', position: 'fixed', left: 0, top: 0, zIndex: 100, transition: 'width .3s ease', overflow: 'hidden' }}>
+    <aside className={`sidebar-aside ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       {/* Logo */}
       <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid rgba(255,255,255,.08)', minHeight: '64px' }}>
         <UtensilsCrossed size={24} style={{ color: '#5DADE2', flexShrink: 0 }} />
@@ -49,6 +54,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             <Link
               key={l.path}
               to={l.path}
+              onClick={handleLinkClick}
               style={{
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px',
                 borderRadius: '10px', marginBottom: '4px', fontSize: '14px',

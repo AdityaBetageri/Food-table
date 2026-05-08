@@ -162,7 +162,7 @@ export default function MenuManager() {
           <div style={{ fontSize: '14px' }}>Click 'Add Item' to create your first menu item.</div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+        <div className="dashboard-menu-grid">
           {filtered.map(item => (
             <div key={item._id} style={{ position: 'relative' }}>
               <MenuItemCard item={item} hideAddButton={true} />

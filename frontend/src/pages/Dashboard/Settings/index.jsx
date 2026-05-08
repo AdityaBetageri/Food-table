@@ -120,7 +120,7 @@ export default function Settings() {
               <label className="form-label">City</label>
               <input className="form-input" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div className="grid-2" style={{ gap: '14px' }}>
               <div className="form-group">
                 <label className="form-label">Opening Time</label>
                 <input className="form-input" type="time" value={profile.open} onChange={e => setProfile({...profile, open: e.target.value})} />
