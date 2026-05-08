@@ -76,7 +76,7 @@ export default function CustomerMenu() {
           setOrderStage(stage);
           setTargetOrderStage(stage);
           setOrderPlaced(true);
-          
+
           // Check if feedback was already submitted for this order
           const isFeedbackDone = localStorage.getItem(`feedback_done_${existingOrderId}`);
           if (isFeedbackDone) setFeedbackSubmitted(true);
@@ -307,7 +307,7 @@ export default function CustomerMenu() {
 
           {/* Back Button */}
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-            <button onClick={() => setOrderPlaced(false)} style={{ background: 'transparent', border: 'none', color: '#1B4F72', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
+            <button onClick={resetFlow} style={{ background: 'transparent', border: 'none', color: '#1B4F72', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
               <ArrowLeft size={18} /> Back to Menu
             </button>
           </div>
@@ -354,7 +354,7 @@ export default function CustomerMenu() {
           {/* Order Details (History / Digital Bill) */}
           {placedOrderDetails && (
             <div style={{ background: '#fff', borderRadius: '16px', padding: '20px', textAlign: 'left', boxShadow: '0 4px 20px rgba(0,0,0,.06)', marginBottom: '20px' }}>
-              <button 
+              <button
                 onClick={() => setShowBill(!showBill)}
                 style={{ width: '100%', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
@@ -421,7 +421,7 @@ export default function CustomerMenu() {
             <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'left', marginBottom: '20px', animation: 'orderFadeIn .5s ease' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: '#1B4F72', textAlign: 'center' }}>Thank You!</h3>
               <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>Please let us know how was your experience.</p>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Food Quality</span>
                 {renderStars(foodRating, setFoodRating)}
@@ -449,11 +449,11 @@ export default function CustomerMenu() {
           )}
 
           {orderStage === 5 && feedbackSubmitted && (
-             <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'center', marginBottom: '20px', animation: 'orderFadeIn .5s ease' }}>
-               <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
-               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1B4F72', marginBottom: '8px' }}>Thank you for your feedback!</h3>
-               <p style={{ color: '#64748B', fontSize: '14px' }}>We hope to see you again soon.</p>
-             </div>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'center', marginBottom: '20px', animation: 'orderFadeIn .5s ease' }}>
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1B4F72', marginBottom: '8px' }}>Thank you for your feedback!</h3>
+              <p style={{ color: '#64748B', fontSize: '14px' }}>We hope to see you again soon.</p>
+            </div>
           )}
 
           {/* Action Buttons */}
@@ -484,7 +484,7 @@ export default function CustomerMenu() {
             <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               Table {tableNum}
               {activeOrderId && (
-                 <button onClick={() => setOrderPlaced(true)} style={{ background: '#AED6F1', color: '#1B4F72', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>View Order</button>
+                <button onClick={() => setOrderPlaced(true)} style={{ background: '#AED6F1', color: '#1B4F72', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>View Order</button>
               )}
             </div>
           </div>
@@ -550,17 +550,17 @@ export default function CustomerMenu() {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '12px' }}>
               {filtered.map(item => {
-              const cartItem = cartItems.find(ci => ci.menuItemId === item._id);
-              const qty = cartItem ? cartItem.qty : 0;
-              return (
-                <MenuItemCard
-                  key={item._id}
-                  item={item}
-                  cartQty={qty}
-                  onIncrease={() => addItem(item, 1)}
-                  onDecrease={() => updateQty(item._id, qty - 1)}
-                />
-              );
+                const cartItem = cartItems.find(ci => ci.menuItemId === item._id);
+                const qty = cartItem ? cartItem.qty : 0;
+                return (
+                  <MenuItemCard
+                    key={item._id}
+                    item={item}
+                    cartQty={qty}
+                    onIncrease={() => addItem(item, 1)}
+                    onDecrease={() => updateQty(item._id, qty - 1)}
+                  />
+                );
               })}
             </div>
           </>
