@@ -446,7 +446,7 @@ export default function ManagementDashboard() {
     <div className="mgmt-page">
       <header className="mgmt-header">
         <div className="mgmt-header-left">
-          <button className="mgmt-back" onClick={() => navigate('/management')} id="mgmt-back-btn"><img src="frontend/assets/logo.png" alt="logo" size={18} /></button>
+          <button className="mgmt-back" onClick={() => navigate('/management')} id="mgmt-back-btn"><img src="/logo.png" alt="logo" size={18} /></button>
           <div>
             <button><h1 className="mgmt-title" onClick={() => navigate('/management')}>Management Dashboard</h1></button>
             <p className="mgmt-subtitle">Platform administration & hotel oversight</p>
