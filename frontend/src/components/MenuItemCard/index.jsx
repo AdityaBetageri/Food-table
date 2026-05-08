@@ -38,7 +38,7 @@ export default function MenuItemCard({ item, cartQty = 0, onIncrease, onDecrease
         </span>
         {!isAvailable && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#C0392B', fontSize: '13px' }}>
-            Out of Stock
+            Currently Unavailable
           </div>
         )}
       </div>

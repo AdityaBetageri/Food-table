@@ -587,7 +587,7 @@ export default function CustomerMenu() {
                       <div style={{ flex: 1, marginRight: '12px' }}>
                         <div style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {ci.name}
-                          {!isAvailable && <span style={{ fontSize: '10px', background: '#FEE2E2', color: '#EF4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Out of Stock</span>}
+                          {!isAvailable && <span style={{ fontSize: '10px', background: '#FEE2E2', color: '#EF4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Currently Unavailable</span>}
                         </div>
                         <div style={{ fontSize: '13px', color: '#64748B' }}>{formatCurrency(ci.price)} each</div>
                       </div>
@@ -618,7 +618,7 @@ export default function CustomerMenu() {
                 </div>
                 {hasUnavailableInCart && (
                   <div style={{ color: '#E53E3E', background: '#FFF5F5', padding: '8px', borderRadius: '8px', fontSize: '12px', textAlign: 'center', marginBottom: '8px', fontWeight: 600, border: '1px solid #FEB2B2' }}>
-                    Some items are out of stock. Please remove them to proceed.
+                    Some items are currently unavailable. Please remove them to proceed.
                   </div>
                 )}
                 <button
