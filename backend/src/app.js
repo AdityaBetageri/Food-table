@@ -13,6 +13,7 @@ const analyticsRoutes = require('./routes/analytics.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const managementRoutes = require('./routes/management.routes');
 const managementAuthRoutes = require('./routes/managementAuth.routes');
+const contactRoutes = require('./routes/contact.routes');
 const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/management/auth', managementAuthRoutes);
 app.use('/api/management', managementRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

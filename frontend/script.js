@@ -265,25 +265,58 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==================== FORM SUBMISSION ====================
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', e => {
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const btn = registerForm.querySelector('button[type="submit"]');
+            const btn = contactForm.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>Creating Restaurant...</span> <div style="width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;"></div>';
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('contact-name').value,
+                email: document.getElementById('contact-email').value,
+                subject: document.getElementById('contact-subject').value,
+                message: document.getElementById('contact-message').value
+            };
+
+            btn.innerHTML = '<span>Sending Message...</span> <div style="width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;"></div>';
             btn.disabled = true;
 
-            setTimeout(() => {
-                btn.innerHTML = '<span>✓ Restaurant Created!</span>';
-                btn.style.background = 'linear-gradient(135deg, #1E8449, #27AE60)';
+            try {
+                // API URL (should match backend .env PORT)
+                const API_URL = 'http://localhost:5001/api/contact/submit';
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    btn.innerHTML = '<span>✓ Message Sent!</span>';
+                    btn.style.background = 'linear-gradient(135deg, #1E8449, #27AE60)';
+                    contactForm.reset();
+                } else {
+                    // Try to get a specific error message from the backend
+                    throw new Error(data.message || 'Server error');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                // Display the specific error message on the button temporarily
+                btn.innerHTML = `<span>❌ ${error.message === 'Failed to fetch' ? 'Server Offline' : 'Error Sending'}</span>`;
+                btn.style.background = 'linear-gradient(135deg, #C0392B, #E74C3C)';
+            } finally {
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '';
                     btn.disabled = false;
-                    registerForm.reset();
-                }, 2500);
-            }, 2000);
+                }, 3000);
+            }
         });
     }
 

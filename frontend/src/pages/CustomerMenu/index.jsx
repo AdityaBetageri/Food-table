@@ -5,7 +5,8 @@ import { useCart } from '../../context/CartContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import {
   UtensilsCrossed, ShoppingCart, Search, CheckCircle, Clock,
-  ArrowRight, Minus, Plus, RotateCcw, ReceiptText, Loader2, ArrowLeft, ChevronDown, ChevronUp
+  ArrowRight, Minus, Plus, RotateCcw, ReceiptText, Loader2, ArrowLeft, ChevronDown, ChevronUp,
+  ClipboardList, ListOrdered, Activity, LayoutList
 } from 'lucide-react';
 import { orderAPI, feedbackAPI, menuAPI } from '../../services/api';
 import { useSocketContext } from '../../context/SocketContext';
@@ -26,6 +27,7 @@ export default function CustomerMenu() {
   const [category, setCategory] = useState('All');
   const [vegFilter, setVegFilter] = useState('all');
   const [showCart, setShowCart] = useState(false);
+  const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [loadingOrderRestore, setLoadingOrderRestore] = useState(!!existingOrderId);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -300,6 +302,68 @@ export default function CustomerMenu() {
   }
 
   if (orderPlaced) {
+    if (orderStage === 5) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', padding: '24px', textAlign: 'center' }}>
+          <div style={{ maxWidth: '420px', width: '100%', animation: 'orderFadeIn .6s ease' }}>
+            <div style={{ fontSize: '80px', marginBottom: '20px' }}>🎉</div>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, color: '#166534', marginBottom: '12px', fontFamily: "'Outfit',sans-serif" }}>Thank You!</h2>
+            <p style={{ color: '#475569', fontSize: '16px', marginBottom: '32px' }}>Your payment has been successfully processed and your order is complete.</p>
+
+            {/* Feedback Section */}
+            {!feedbackSubmitted ? (
+              <div style={{ background: '#fff', padding: '24px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', textAlign: 'left', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '16px', color: '#1B4F72' }}>How was your experience?</h3>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Food Quality</span>
+                  {renderStars(foodRating, setFoodRating)}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Service & Experience</span>
+                  {renderStars(overallRating, setOverallRating)}
+                </div>
+                
+                <textarea
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  placeholder="Tell us what you liked or how we can improve..."
+                  style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '16px', fontSize: '14px', resize: 'none', minHeight: '100px', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = '#2E86C1'}
+                  onBlur={(e) => e.target.style.borderColor = '#E2E8F0'}
+                />
+                
+                <button
+                  onClick={submitFeedback}
+                  disabled={!overallRating || isSubmittingFeedback}
+                  className="btn btn-primary"
+                  style={{ width: '100%', padding: '14px', height: 'auto', opacity: !overallRating || isSubmittingFeedback ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '16px', fontWeight: 700 }}
+                >
+                  {isSubmittingFeedback ? <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> : 'Submit & Close'}
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: '#fff', padding: '32px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', marginBottom: '24px', animation: 'orderFadeIn .5s ease' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>⭐</div>
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#1B4F72', marginBottom: '8px' }}>Feedback Received!</h3>
+                <p style={{ color: '#64748B', fontSize: '14px', margin: 0 }}>We truly value your input. See you again soon!</p>
+              </div>
+            )}
+
+            <button 
+              onClick={resetFlow} 
+              style={{ width: '100%', background: 'transparent', border: '2px solid #166534', color: '#166534', padding: '14px', borderRadius: '16px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+            >
+              <RotateCcw size={18} /> Start New Order
+            </button>
+          </div>
+          <style>{`
+            @keyframes orderFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+          `}</style>
+        </div>
+      );
+    }
+
     const current = ORDER_STAGES[orderStage];
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #E8F8F0, #D5F5E3)', padding: '24px', paddingTop: '24px' }}>
@@ -324,12 +388,12 @@ export default function CustomerMenu() {
                 Order ID: #{placedOrderDetails.orderNumber.toString().padStart(3, '0')}
               </div>
             )}
-            {ORDER_STAGES.map((s, i) => {
+            {ORDER_STAGES.slice(0, 5).map((s, i) => { // Only show up to 'Served' in timeline here
               const done = i < orderStage;
               const active = i === orderStage;
               return (
-                <div key={s.key} style={{ display: 'flex', gap: '14px', position: 'relative', paddingBottom: i < ORDER_STAGES.length - 1 ? '20px' : '0' }}>
-                  {i < ORDER_STAGES.length - 1 && (
+                <div key={s.key} style={{ display: 'flex', gap: '14px', position: 'relative', paddingBottom: i < 4 ? '20px' : '0' }}>
+                  {i < 4 && (
                     <div style={{ position: 'absolute', left: '15px', top: '32px', width: '2px', height: 'calc(100% - 32px)', background: done ? '#27AE60' : '#EDF2F7', transition: 'background .5s' }} />
                   )}
                   <div style={{
@@ -373,11 +437,10 @@ export default function CustomerMenu() {
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {item.qty}x {item.name}
-                          {item.isAddition && (
-                            <span style={{ fontSize: '9px', background: '#FFF9C4', color: '#F57F17', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #FBC02D' }}>NEW</span>
-                          )}
-                          {orderStage >= 4 && (
+                          {orderStage >= 4 ? (
                             <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #86EFAC' }}>SERVED</span>
+                          ) : (
+                            <span style={{ fontSize: '9px', background: '#FFF9C4', color: '#F57F17', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #FBC02D' }}>PREPARING</span>
                           )}
                         </span>
                         <span style={{ fontWeight: 600 }}>{formatCurrency(item.price * item.qty)}</span>
@@ -416,49 +479,9 @@ export default function CustomerMenu() {
             </div>
           )}
 
-          {/* Feedback Section ONLY ON LAST STAGE */}
-          {orderStage === 5 && !feedbackSubmitted && (
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'left', marginBottom: '20px', animation: 'orderFadeIn .5s ease' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: '#1B4F72', textAlign: 'center' }}>Thank You!</h3>
-              <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>Please let us know how was your experience.</p>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Food Quality</span>
-                {renderStars(foodRating, setFoodRating)}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: '#4A5568' }}>Overall Experience</span>
-                {renderStars(overallRating, setOverallRating)}
-              </div>
-              <textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Any comments? (Optional)"
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '12px', fontSize: '14px', resize: 'vertical' }}
-              />
-              <button
-                onClick={submitFeedback}
-                disabled={!overallRating || isSubmittingFeedback}
-                className="btn btn-primary"
-                style={{ width: '100%', opacity: !overallRating || isSubmittingFeedback ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                {isSubmittingFeedback && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
-                {isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
-              </button>
-            </div>
-          )}
-
-          {orderStage === 5 && feedbackSubmitted && (
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,.06)', textAlign: 'center', marginBottom: '20px', animation: 'orderFadeIn .5s ease' }}>
-              <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1B4F72', marginBottom: '8px' }}>Thank you for your feedback!</h3>
-              <p style={{ color: '#64748B', fontSize: '14px' }}>We hope to see you again soon.</p>
-            </div>
-          )}
-
           {/* Action Buttons */}
           <button onClick={resetFlow} className="btn btn-primary btn-lg" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <RotateCcw size={16} /> {orderStage === 5 ? 'Start New Order' : 'Order More Items'}
+            <RotateCcw size={16} /> Order More Items
           </button>
         </div>
 
@@ -481,11 +504,8 @@ export default function CustomerMenu() {
               <UtensilsCrossed size={20} style={{ color: '#AED6F1' }} />
               Table<span style={{ color: '#AED6F1' }}>Tap</span>
             </span>
-            <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px' }}>
               Table {tableNum}
-              {activeOrderId && (
-                <button onClick={() => setOrderPlaced(true)} style={{ background: '#AED6F1', color: '#1B4F72', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>View Order</button>
-              )}
             </div>
           </div>
           <button onClick={() => setShowCart(true)} style={{ position: 'relative', background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '12px', padding: '10px 16px', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -496,7 +516,7 @@ export default function CustomerMenu() {
       </div>
 
       {/* Search & Filters */}
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px', paddingBottom: '120px' }}>
         <div style={{ position: 'relative', marginBottom: '12px' }}>
           <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search menu..." style={{ width: '100%', padding: '12px 16px 12px 40px', borderRadius: '12px', border: '2px solid #E2E8F0', fontSize: '14px', background: '#fff', outline: 'none' }} />
@@ -524,30 +544,7 @@ export default function CustomerMenu() {
           <div style={{ textAlign: 'center', padding: '40px', color: '#A0AEC0' }}>Loading menu...</div>
         ) : (
           <>
-            {activeOrderId && placedOrderDetails && placedOrderDetails.items.length > 0 && (
-              <div style={{ marginBottom: '24px', animation: 'fadeIn .5s ease' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '12px', color: '#1B4F72', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clock size={18} /> Your Current Order
-                </h3>
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,.03)' }}>
-                  {groupOrderItems(placedOrderDetails.items).map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569', marginBottom: idx === groupOrderItems(placedOrderDetails.items).length - 1 ? 0 : '8px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {item.qty}x {item.name}
-                        {orderStage >= 4 && (
-                          <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #86EFAC' }}>SERVED</span>
-                        )}
-                      </span>
-                      <span style={{ fontWeight: 600 }}>{formatCurrency(item.price * item.qty)}</span>
-                    </div>
-                  ))}
-                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #CBD5E1', display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: '#1B4F72' }}>
-                    <span>Total</span>
-                    <span>{formatCurrency(placedOrderDetails.total)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Removed inline Current Order section to move to bottom nav */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '12px' }}>
               {filtered.map(item => {
                 const cartItem = cartItems.find(ci => ci.menuItemId === item._id);
@@ -646,12 +643,142 @@ export default function CustomerMenu() {
         </div>
       )}
 
-      {/* Floating Cart Button */}
-      {itemCount > 0 && !showCart && (
-        <button onClick={() => setShowCart(true)} style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #1B4F72, #2E86C1)', color: '#fff', padding: '14px 28px', borderRadius: '999px', fontSize: '15px', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 8px 24px rgba(27,79,114,.4)', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 50 }}>
-          <ShoppingCart size={18} /> View Cart ({itemCount}) • {formatCurrency(total)}
-        </button>
+      {/* Order Summary Drawer */}
+      {showOrderSummary && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.5)' }} onClick={() => setShowOrderSummary(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '24px 24px 0 0', maxHeight: '80vh', overflow: 'auto', padding: '24px', animation: 'fadeIn .3s ease' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px', fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4F72' }}>
+              <LayoutList size={20} /> Your Order Summary
+            </h3>
+            {placedOrderDetails ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {groupOrderItems(placedOrderDetails.items).map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '14px', color: '#1B4F72' }}>{item.qty}x {item.name}</div>
+                      <div style={{ marginTop: '4px' }}>
+                        {orderStage >= 4 ? (
+                          <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>SERVED</span>
+                        ) : (
+                          <span style={{ fontSize: '10px', background: '#FFF9C4', color: '#F57F17', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>PREPARING</span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 800, color: '#1B4F72' }}>{formatCurrency(item.price * item.qty)}</div>
+                  </div>
+                ))}
+                <div style={{ marginTop: '12px', padding: '16px', borderTop: '2px dashed #CBD5E1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800, fontSize: '20px', color: '#1B4F72' }}>
+                  <span>Total Bill</span>
+                  <span>{formatCurrency(placedOrderDetails.total)}</span>
+                </div>
+                <button onClick={() => { setShowOrderSummary(false); setOrderPlaced(true); }} style={{ width: '100%', marginTop: '10px', padding: '14px', borderRadius: '14px', background: '#EBF8FF', color: '#2E86C1', border: '1px solid #AED6F1', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Activity size={18} /> View Live Status Tracker
+                </button>
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#64748B', padding: '20px' }}>No active order found.</p>
+            )}
+          </div>
+        </div>
       )}
+
+      {/* Bottom Navigation Bar */}
+      {(itemCount > 0 || activeOrderId) && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'calc(100% - 32px)',
+          maxWidth: '568px',
+          height: '74px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '26px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 12px',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          border: '1px solid rgba(255,255,255,0.4)',
+          zIndex: 60,
+          animation: 'navSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}>
+          {/* Left: My Order (Summary) */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
+            {activeOrderId ? (
+              <button
+                onClick={() => setShowOrderSummary(true)}
+                style={{
+                  width: '52px', height: '52px', borderRadius: '18px',
+                  background: '#fff', border: '1px solid #E2E8F0',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  color: '#1B4F72', cursor: 'pointer', transition: 'all 0.2s',
+                  position: 'relative', gap: '2px'
+                }}
+              >
+                <LayoutList size={20} />
+                <span style={{ fontSize: '8px', fontWeight: 800 }}>MY ORDER</span>
+              </button>
+            ) : (
+              <div style={{ width: '52px' }} />
+            )}
+          </div>
+
+          {/* Center: View Cart Pill */}
+          <div style={{ display: 'flex', justifyContent: 'center', flex: 2 }}>
+            {itemCount > 0 && (
+              <button
+                onClick={() => setShowCart(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #1B4F72, #2E86C1)',
+                  color: '#fff', padding: '12px 22px', borderRadius: '18px',
+                  fontSize: '14px', fontWeight: 700, border: 'none',
+                  cursor: 'pointer', boxShadow: '0 8px 20px rgba(27,79,114,0.35)',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  whiteSpace: 'nowrap', animation: 'pillSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
+                <ShoppingCart size={18} />
+                <span>Cart ({itemCount})</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right: Order Status Icon */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            {activeOrderId ? (
+              <button
+                onClick={() => setOrderPlaced(true)}
+                style={{
+                  width: '52px', height: '52px', borderRadius: '18px',
+                  background: '#fff', border: '1px solid #E2E8F0',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  color: '#2E86C1', cursor: 'pointer', transition: 'all 0.2s',
+                  position: 'relative', gap: '2px'
+                }}
+              >
+                <Activity size={20} />
+                <span style={{ fontSize: '8px', fontWeight: 800 }}>STATUS</span>
+                <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#27AE60', borderRadius: '50%', border: '2px solid #fff' }} />
+              </button>
+            ) : (
+              <div style={{ width: '52px' }} />
+            )}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes navSlideUp {
+          from { opacity: 0; transform: translate(-50%, 40px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes pillSlideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

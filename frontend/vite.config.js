@@ -25,6 +25,11 @@ export default defineConfig({
             return next();
           }
 
+          if (req.url === '/aboutUs') {
+            req.url = '/about-us.html';
+            return next();
+          }
+
           console.log(`[Middleware] Rewriting ${req.url} to /app.html`);
 
           // Route ALL other paths to the React App for client-side routing (including 404s)
@@ -38,7 +43,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'app.html'),
-        landing: resolve(__dirname, 'index.html')
+        landing: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about-us.html')
       }
     }
   }
