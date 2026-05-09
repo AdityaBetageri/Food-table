@@ -399,17 +399,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         acceptCookiesBtn.addEventListener('click', () => {
-            setCookie('tabletap_cookies_accepted', 'true', 30);
-            localStorage.setItem('cookiesAccepted', 'true'); // Fallback
-            removeCookie('tabletap_cookies_declined');
-            localStorage.removeItem('cookiesDeclined');
-            cookieBanner.style.display = 'none';
-            
-            // Check for auto-redirect after acceptance
-            const currentToken = getCookie('tabletap_token') || localStorage.getItem('tabletap_token');
-            if (currentToken) {
-                window.location.href = '/dashboard';
-            }
+            const originalText = acceptCookiesBtn.innerHTML;
+            acceptCookiesBtn.innerHTML = '<div style="width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;"></div>';
+            acceptCookiesBtn.style.pointerEvents = 'none';
+
+            // Simulate real-time processing
+            setTimeout(() => {
+                setCookie('tabletap_cookies_accepted', 'true', 365); // 1 year persistence
+                localStorage.setItem('cookiesAccepted', 'true');
+                removeCookie('tabletap_cookies_declined');
+                localStorage.removeItem('cookiesDeclined');
+                
+                // Show a quick toast or success message
+                acceptCookiesBtn.innerHTML = '✓ Done';
+                acceptCookiesBtn.style.background = '#27AE60';
+
+                setTimeout(() => {
+                    cookieBanner.style.transform = 'translateY(100%)';
+                    cookieBanner.style.opacity = '0';
+                    setTimeout(() => {
+                        cookieBanner.style.display = 'none';
+                        
+                        // Check for auto-redirect after acceptance if already logged in
+                        const currentToken = getCookie('tabletap_token') || localStorage.getItem('tabletap_token');
+                        if (currentToken) {
+                            window.location.href = '/dashboard';
+                        }
+                    }, 500);
+                }, 800);
+            }, 600);
         });
 
         if (declineCookiesBtn) {
@@ -418,7 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('cookiesDeclined', 'true');
                 removeCookie('tabletap_cookies_accepted');
                 localStorage.removeItem('cookiesAccepted');
-                cookieBanner.style.display = 'none';
+                cookieBanner.style.transform = 'translateY(100%)';
+                cookieBanner.style.opacity = '0';
+                setTimeout(() => {
+                    cookieBanner.style.display = 'none';
+                }, 500);
             });
         }
     }
