@@ -1,7 +1,7 @@
 {
-  "name": "tabletap-backend",
+  "name": "tryscan-backend",
   "version": "1.0.0",
-  "description": "TableTap Smart QR Restaurant Ordering System — Backend API",
+  "description": "TryScan Smart QR Restaurant Ordering System — Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

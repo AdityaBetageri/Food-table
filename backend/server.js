@@ -28,7 +28,7 @@ setupSocket(io);
 
 // ==================== Start Server ====================
 server.listen(PORT, () => {
-  console.log('\n🚀 TableTap Backend Server running!');
+  console.log('\n🚀 TryScan Backend Server running!');
   console.log(`   API:      http://localhost:${PORT}/api`);
   console.log(`   Health:   http://localhost:${PORT}/api/health`);
   console.log(`   Socket:   ws://localhost:${PORT}`);

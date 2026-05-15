@@ -4,56 +4,37 @@ import { getCookie, setCookie, removeCookie } from '../utils/cookies';
 
 const AuthContext = createContext(null);
 
-/**
- * Creates a demo user when the backend is unavailable.
- * This lets the frontend be explored fully during development.
- */
-function createDemoUser(formData) {
-  return {
-    token: 'demo_token_' + Date.now(),
-    user: {
-      _id: 'demo_' + Date.now(),
-      name: formData.name || formData.email?.split('@')[0] || 'Demo User',
-      email: formData.email || 'demo@tabletap.com',
-      role: 'owner',
-      hotelName: formData.hotelName || 'Demo Restaurant',
-      city: formData.city || 'Mumbai',
-      phone: formData.phone || '',
-    },
-  };
-}
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(getCookie('tabletap_token') || localStorage.getItem('tabletap_token'));
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('tryscan_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState(getCookie('tryscan_token') || localStorage.getItem('tryscan_token'));
   const [loading, setLoading] = useState(true);
 
   // Load user on mount if token exists
   useEffect(() => {
     if (token) {
-      // Check if this is a demo token
-      if (token.startsWith('demo_token_')) {
-        const savedUser = localStorage.getItem('tabletap_user');
-        if (savedUser) {
-          try {
-            setUser(JSON.parse(savedUser));
-          } catch {
-            removeCookie('tabletap_token');
-            localStorage.removeItem('tabletap_token');
-            localStorage.removeItem('tabletap_user');
-            setToken(null);
-          }
-        }
-        setLoading(false);
-        return;
-      }
-
       authAPI.getMe()
-        .then((data) => setUser(data.user || data))
-        .catch(() => {
-          removeCookie('tabletap_token');
-          localStorage.removeItem('tabletap_token');
-          setToken(null);
+        .then((data) => {
+          const userData = data.user || data;
+          setUser(userData);
+          localStorage.setItem('tryscan_user', JSON.stringify(userData));
+        })
+        .catch((err) => {
+          // Only log out if the backend explicitly says the token is invalid (401/403)
+          // This prevents logging out on fast reloads, network drops, or 500 errors
+          if (err.status === 401 || err.status === 403) {
+            removeCookie('tryscan_token');
+            localStorage.removeItem('tryscan_token');
+            localStorage.removeItem('tryscan_user');
+            setToken(null);
+            setUser(null);
+          }
         })
         .finally(() => setLoading(false));
     } else {
@@ -62,77 +43,42 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (email, password) => {
-    try {
-      const data = await authAPI.login({ email, password });
-      const newToken = data.token;
-      setCookie('tabletap_token', newToken, 7);
-      localStorage.setItem('tabletap_token', newToken); // Legacy support
-      setToken(newToken);
-      setUser(data.user);
-      return data;
-    } catch (err) {
-      // Fallback to demo mode when backend is unavailable
-      const msg = (err.message || '').toLowerCase();
-      if (err instanceof TypeError || msg.includes('fetch') || msg.includes('network')) {
-        console.warn('[TableTap] Backend unavailable — using demo mode');
-        const demo = createDemoUser({ email });
-        setCookie('tabletap_token', demo.token, 7);
-        localStorage.setItem('tabletap_token', demo.token);
-        localStorage.setItem('tabletap_user', JSON.stringify(demo.user));
-        setToken(demo.token);
-        setUser(demo.user);
-        return demo;
-      }
-      throw err;
-    }
+    const data = await authAPI.login({ email, password });
+    const newToken = data.token;
+    setCookie('tryscan_token', newToken, 7);
+    localStorage.setItem('tryscan_token', newToken);
+    localStorage.setItem('tryscan_user', JSON.stringify(data.user));
+    setToken(newToken);
+    setUser(data.user);
+    return data;
   };
 
   const register = async (formData) => {
-    try {
-      const data = await authAPI.register(formData);
-      // If approval is pending, don't log in — return data with status
-      if (data.approvalStatus === 'pending') {
-        return data; // { approvalStatus: 'pending', message: "..." }
-      }
-      if (data.token) {
-        setCookie('tabletap_token', data.token, 7);
-        localStorage.setItem('tabletap_token', data.token);
-        setToken(data.token);
-        setUser(data.user);
-      }
-      return data;
-    } catch (err) {
-      // Fallback to demo mode when backend is unavailable
-      const msg = (err.message || '').toLowerCase();
-      if (err instanceof TypeError || msg.includes('fetch') || msg.includes('network')) {
-        console.warn('[TableTap] Backend unavailable — using demo mode');
-        const demo = createDemoUser(formData);
-        setCookie('tabletap_token', demo.token, 7);
-        localStorage.setItem('tabletap_token', demo.token);
-        localStorage.setItem('tabletap_user', JSON.stringify(demo.user));
-        setToken(demo.token);
-        setUser(demo.user);
-        return demo;
-      }
-      throw err;
+    const data = await authAPI.register(formData);
+    // If approval is pending, don't log in — return data with status
+    if (data.approvalStatus === 'pending') {
+      return data; // { approvalStatus: 'pending', message: "..." }
     }
+    if (data.token) {
+      setCookie('tryscan_token', data.token, 7);
+      localStorage.setItem('tryscan_token', data.token);
+      localStorage.setItem('tryscan_user', JSON.stringify(data.user));
+      setToken(data.token);
+      setUser(data.user);
+    }
+    return data;
   };
 
   const logout = () => {
-    removeCookie('tabletap_token');
-    localStorage.removeItem('tabletap_token');
-    localStorage.removeItem('tabletap_user');
+    removeCookie('tryscan_token');
+    localStorage.removeItem('tryscan_token');
+    localStorage.removeItem('tryscan_user');
     setToken(null);
     setUser(null);
   };
 
   const forgotPassword = async (email) => {
-    try {
-      return await authAPI.forgotPassword({ email });
-    } catch (err) {
-      console.warn('[TableTap] Backend unavailable for forgot password');
-      return { message: 'Password reset email sent (demo).' };
-    }
+    return await authAPI.forgotPassword({ email });
   };
 
   const isOwner = user?.role === 'owner';

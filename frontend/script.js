@@ -1,4 +1,4 @@
-// ==================== TABLETAP LANDING PAGE SCRIPT ====================
+// ==================== TRYSCAN LANDING PAGE SCRIPT ====================
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -358,8 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== AUTO REDIRECT ====================
     // If user is already logged in (has token) and has accepted cookies, redirect to app
-    const authToken = getCookie('tabletap_token') || localStorage.getItem('tabletap_token');
-    const cookiesAccepted = getCookie('tabletap_cookies_accepted') === 'true' || localStorage.getItem('cookiesAccepted') === 'true';
+    const authToken = getCookie('tryscan_token') || localStorage.getItem('tryscan_token');
+    const cookiesAccepted = getCookie('tryscan_cookies_accepted') === 'true' || localStorage.getItem('cookiesAccepted') === 'true';
 
     if (authToken && cookiesAccepted) {
         console.log('🚀 Authenticated user detected. Redirecting to dashboard...');
@@ -374,8 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const declineCookiesBtn = document.getElementById('btn-decline-cookies');
 
     if (cookieBanner && acceptCookiesBtn) {
-        const hasConsent = getCookie('tabletap_cookies_accepted');
-        const hasDeclined = getCookie('tabletap_cookies_declined');
+        const hasConsent = getCookie('tryscan_cookies_accepted');
+        const hasDeclined = getCookie('tryscan_cookies_declined');
 
         if (!hasConsent && !hasDeclined && !localStorage.getItem('cookiesAccepted') && !localStorage.getItem('cookiesDeclined')) {
             cookieBanner.style.display = 'block';
@@ -388,9 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Simulate real-time processing
             setTimeout(() => {
-                setCookie('tabletap_cookies_accepted', 'true', 365); // 1 year persistence
+                setCookie('tryscan_cookies_accepted', 'true', 365); // 1 year persistence
                 localStorage.setItem('cookiesAccepted', 'true');
-                removeCookie('tabletap_cookies_declined');
+                removeCookie('tryscan_cookies_declined');
                 localStorage.removeItem('cookiesDeclined');
                 
                 // Show a quick toast or success message
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         cookieBanner.style.display = 'none';
                         
                         // Check for auto-redirect after acceptance if already logged in
-                        const currentToken = getCookie('tabletap_token') || localStorage.getItem('tabletap_token');
+                        const currentToken = getCookie('tryscan_token') || localStorage.getItem('tryscan_token');
                         if (currentToken) {
                             window.location.href = '/dashboard';
                         }
@@ -415,9 +415,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (declineCookiesBtn) {
             declineCookiesBtn.addEventListener('click', () => {
-                setCookie('tabletap_cookies_declined', 'true', 30);
+                setCookie('tryscan_cookies_declined', 'true', 30);
                 localStorage.setItem('cookiesDeclined', 'true');
-                removeCookie('tabletap_cookies_accepted');
+                removeCookie('tryscan_cookies_accepted');
                 localStorage.removeItem('cookiesAccepted');
                 cookieBanner.style.transform = 'translateY(100%)';
                 cookieBanner.style.opacity = '0';
@@ -428,5 +428,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    console.log('🍽️ TableTap Landing Page Loaded Successfully!');
+    console.log('🍽️ TryScan Landing Page Loaded Successfully!');
 });

@@ -502,7 +502,7 @@ export default function CustomerMenu() {
           <div>
             <span style={{ fontSize: '20px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
               <UtensilsCrossed size={20} style={{ color: '#AED6F1' }} />
-              Table<span style={{ color: '#AED6F1' }}>Tap</span>
+              Try<span style={{ color: '#AED6F1' }}>Scan</span>
             </span>
             <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px' }}>
               Table {tableNum}

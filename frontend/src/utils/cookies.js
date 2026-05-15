@@ -1,5 +1,5 @@
 /**
- * Cookie utilities for TableTap
+ * Cookie utilities for TryScan
  */
 
 export const setCookie = (name, value, days = 7) => {

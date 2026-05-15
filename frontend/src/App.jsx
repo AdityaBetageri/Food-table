@@ -4,6 +4,10 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SocketProvider } from './context/SocketContext';
 
+// Route Guards
+import ProtectedRoute from './components/ProtectedRoute';
+import GuestRoute from './components/GuestRoute';
+
 // Pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Auth/Login';
@@ -53,7 +57,7 @@ function DashboardLayout() {
         <div className="mobile-header-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4F72', fontWeight: 800, fontSize: '20px', fontFamily: "'Outfit',sans-serif" }}>
             <UtensilsCrossed size={20} style={{ color: '#5DADE2' }} />
-            <span>Table<span style={{ color: '#5DADE2' }}>Tap</span></span>
+            <span>Try<span style={{ color: '#5DADE2' }}>Scan</span></span>
           </div>
           <button className="hamburger-btn" onClick={() => setMobileOpen(true)}>
             <Menu size={24} />
@@ -74,16 +78,21 @@ function App() {
         <CartProvider>
           <Router>
             <Routes>
+              {/* Public routes — anyone can access */}
               <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route path="/menu" element={<CustomerMenu />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-and-conditions" element={<Terms />} />
               <Route path="/cookies-policy" element={<CookiesPolicy />} />
+
+              {/* Guest-only routes — logged-in users get redirected to /dashboard */}
+              <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+              <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
               <Route path="/management/login" element={<ManagementLogin />} />
+
+              {/* Protected routes — must be logged in (valid cookie) */}
               <Route path="/management" element={<ManagementDashboard />} />
-              <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<Overview />} />
                 <Route path="orders" element={<LiveOrders />} />
                 <Route path="menu" element={<MenuManager />} />
@@ -92,6 +101,7 @@ function App() {
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
