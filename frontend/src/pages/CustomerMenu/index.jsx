@@ -437,7 +437,7 @@ export default function CustomerMenu() {
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {item.qty}x {item.name}
-                          {orderStage >= 4 ? (
+                          {(orderStage >= 4 || item.status === 'served' || item.status === 'paid') ? (
                             <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #86EFAC' }}>SERVED</span>
                           ) : (
                             <span style={{ fontSize: '9px', background: '#FFF9C4', color: '#F57F17', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #FBC02D' }}>PREPARING</span>
@@ -657,7 +657,7 @@ export default function CustomerMenu() {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '14px', color: '#1B4F72' }}>{item.qty}x {item.name}</div>
                       <div style={{ marginTop: '4px' }}>
-                        {orderStage >= 4 ? (
+                        {(orderStage >= 4 || item.status === 'served' || item.status === 'paid') ? (
                           <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>SERVED</span>
                         ) : (
                           <span style={{ fontSize: '10px', background: '#FFF9C4', color: '#F57F17', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>PREPARING</span>
