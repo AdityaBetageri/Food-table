@@ -37,18 +37,18 @@ function DashboardLayout() {
   return (
     <div className="dashboard-layout">
       {/* Mobile Overlay */}
-      <div 
+      <div
         className={`dashboard-mobile-overlay ${mobileOpen ? 'open' : ''}`}
         onClick={() => setMobileOpen(false)}
       />
-      
-      <Sidebar 
-        collapsed={collapsed} 
-        onToggle={() => setCollapsed(!collapsed)} 
+
+      <Sidebar
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(!collapsed)}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
-      
+
       <main className={`dashboard-main ${collapsed ? 'collapsed' : ''}`}>
         <div className="mobile-header-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1B4F72', fontWeight: 800, fontSize: '20px', fontFamily: "'Outfit',sans-serif" }}>

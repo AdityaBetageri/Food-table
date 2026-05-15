@@ -25,7 +25,8 @@ export default defineConfig({
             return next();
           }
 
-          if (req.url === '/aboutUs') {
+          const url = req.url.toLowerCase().split('?')[0].replace(/\/$/, '');
+          if (url === '/aboutus' || url === '/about-us') {
             req.url = '/about-us.html';
             return next();
           }
