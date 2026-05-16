@@ -1,6 +1,6 @@
 const {
   db, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  query, docToObj, docsToArray,
+  query, where, docToObj, docsToArray,
 } = require('../db/firebase');
 
 /**
@@ -8,7 +8,7 @@ const {
  */
 exports.getByHotel = async (req, res, next) => {
   try {
-    const q = collection(db, 'menuItems', req.params.hotelId, 'items');
+    const q = query(collection(db, 'menuItems'), where('hotelId', '==', req.params.hotelId));
     const snap = await getDocs(q);
     // Sort in memory to avoid Firestore composite index requirements
     let items = docsToArray(snap);
@@ -42,7 +42,7 @@ exports.create = async (req, res, next) => {
       isAvailable: isAvailable !== undefined ? isAvailable : true,
       createdAt: new Date().toISOString(),
     };
-    const ref = await addDoc(collection(db, 'menuItems', req.user.hotelId, 'items'), data);
+    const ref = await addDoc(collection(db, 'menuItems'), data);
 
     // Notify clients
     const io = req.app.get('io');
@@ -59,9 +59,9 @@ exports.create = async (req, res, next) => {
  */
 exports.update = async (req, res, next) => {
   try {
-    const ref = doc(db, 'menuItems', req.user.hotelId, 'items', req.params.id);
+    const ref = doc(db, 'menuItems', req.params.id);
     const snap = await getDoc(ref);
-    if (!snap.exists()) {
+    if (!snap.exists() || snap.data().hotelId !== req.user.hotelId) {
       return res.status(404).json({ message: 'Menu item not found.' });
     }
     const updates = { ...req.body, updatedAt: new Date().toISOString() };
@@ -84,9 +84,9 @@ exports.update = async (req, res, next) => {
  */
 exports.remove = async (req, res, next) => {
   try {
-    const ref = doc(db, 'menuItems', req.user.hotelId, 'items', req.params.id);
+    const ref = doc(db, 'menuItems', req.params.id);
     const snap = await getDoc(ref);
-    if (!snap.exists()) {
+    if (!snap.exists() || snap.data().hotelId !== req.user.hotelId) {
       return res.status(404).json({ message: 'Menu item not found.' });
     }
     await deleteDoc(ref);
@@ -106,9 +106,9 @@ exports.remove = async (req, res, next) => {
  */
 exports.toggle = async (req, res, next) => {
   try {
-    const ref = doc(db, 'menuItems', req.user.hotelId, 'items', req.params.id);
+    const ref = doc(db, 'menuItems', req.params.id);
     const snap = await getDoc(ref);
-    if (!snap.exists()) {
+    if (!snap.exists() || snap.data().hotelId !== req.user.hotelId) {
       return res.status(404).json({ message: 'Menu item not found.' });
     }
     const newAvailability = !snap.data().isAvailable;
