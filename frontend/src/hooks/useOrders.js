@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { orderAPI } from '../services/api';
 import { useSocketContext } from '../context/SocketContext';
+import { useOrderSound } from './useOrderSound';
 
 /**
  * Hook to fetch and manage orders with status filtering
@@ -11,6 +12,7 @@ export function useOrders(status = '') {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { playOrderSound } = useOrderSound();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -40,10 +42,11 @@ export function useOrders(status = '') {
         setOrders(prev => {
           const exists = prev.some(o => o._id === order._id);
           if (exists) {
-            // Replace existing order with updated one
+            // Replace existing order with updated one (no sound — it's an addition)
             return prev.map(o => o._id === order._id ? order : o);
           }
-          // Prepend new order
+          // Brand-new order — play the kitchen chime
+          playOrderSound();
           return [order, ...prev];
         });
       }

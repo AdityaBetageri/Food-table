@@ -79,6 +79,8 @@ export const staffAPI = {
 export const analyticsAPI = {
   getSummary: () => request('/analytics/summary'),
   getHeatmap: () => request('/analytics/heatmap'),
+  getExport: (startDate, endDate) =>
+    request(`/analytics/export?startDate=${startDate}&endDate=${endDate}`),
 };
 
 // ==================== Feedback API ====================
