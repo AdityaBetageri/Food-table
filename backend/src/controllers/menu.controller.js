@@ -1,6 +1,6 @@
 const {
   db, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  query, where, orderBy, docToObj, docsToArray,
+  query, where, docToObj, docsToArray,
 } = require('../db/firebase');
 
 /**
@@ -8,10 +8,7 @@ const {
  */
 exports.getByHotel = async (req, res, next) => {
   try {
-    const q = query(
-      collection(db, 'menuItems'),
-      where('hotelId', '==', req.params.hotelId)
-    );
+    const q = query(collection(db, 'menuItems'), where('hotelId', '==', req.params.hotelId));
     const snap = await getDocs(q);
     // Sort in memory to avoid Firestore composite index requirements
     let items = docsToArray(snap);
@@ -46,7 +43,7 @@ exports.create = async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
     const ref = await addDoc(collection(db, 'menuItems'), data);
-    
+
     // Notify clients
     const io = req.app.get('io');
     if (io) io.to(`hotel_${req.user.hotelId}`).emit('menu_update', { type: 'create' });
@@ -71,7 +68,7 @@ exports.update = async (req, res, next) => {
     if (updates.price) updates.price = Number(updates.price);
     await updateDoc(ref, updates);
     const updated = await getDoc(ref);
-    
+
     // Notify clients
     const io = req.app.get('io');
     if (io) io.to(`hotel_${req.user.hotelId}`).emit('menu_update', { type: 'update' });

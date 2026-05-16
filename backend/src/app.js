@@ -55,7 +55,7 @@ app.use('/api/contact', contactRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), name: 'TableTap API' });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), name: 'TryScan API' });
 });
 
 // ==================== Error Handler ====================

@@ -137,7 +137,7 @@ function NotificationsModal({ accessRequests, loadingId, approveRequest, denyReq
 }
 
 /* ─── Control Panel Tab ─── */
-function ControlTab({ hotels, setHotels, accessRequests, log, changeStatus, loadingId, approveRequest, denyRequest }) {
+function ControlTab({ hotels, setHotels, accessRequests, log, changeStatus, changePlan, loadingId, approveRequest, denyRequest }) {
   const [filter, setFilter] = useState('all');
   const shown = filter === 'all' ? hotels : hotels.filter(h => h.status === filter);
 
@@ -195,21 +195,37 @@ function ControlTab({ hotels, setHotels, accessRequests, log, changeStatus, load
         </div>
 
         <div className="mgmt-control-list">
-          {shown.map(h => (
+          {shown.map(h => {
+            const isExpired = h.planExpiresAt && new Date(h.planExpiresAt) <= new Date();
+            const isActive = h.planExpiresAt && new Date(h.planExpiresAt) > new Date();
+            return (
             <div key={h.id} className="mgmt-control-row">
               <div className="mgmt-control-info">
                 <div className="mgmt-control-name">{h.name}</div>
                 <div className="mgmt-control-meta"><Globe size={12} /> {h.city} &middot; {h.owner} &middot; {h.tables} tables</div>
                 {h.phone && <div className="mgmt-control-meta"><Activity size={12} /> {h.phone}</div>}
+                <div className="mgmt-control-meta" style={{ marginTop: 4 }}>
+                  <Clock size={12} /> Plan Expires: {isExpired ? <span style={{ color: '#E74C3C', fontWeight: 600 }}>Expired ({new Date(h.planExpiresAt).toDateString()})</span> : (h.planExpiresAt ? new Date(h.planExpiresAt).toDateString() : 'N/A')}
+                </div>
               </div>
               <span className={`mgmt-badge mgmt-badge-${h.status}`}>{h.status}</span>
-              <div className="mgmt-control-actions">
-                {h.status !== 'active' && <button disabled={loadingId === `change-${h.id}-active`} className="mgmt-act-btn mgmt-act-approve" onClick={() => changeStatus(h.id, 'active')} id={`activate-${h.id}`}>{loadingId === `change-${h.id}-active` ? <Loader2 size={14} className="mgmt-spinner" /> : <CheckCircle2 size={14} />} {loadingId === `change-${h.id}-active` ? 'Activating...' : 'Activate'}</button>}
-                {h.status !== 'blocked' && <button disabled={loadingId === `change-${h.id}-blocked`} className="mgmt-act-btn mgmt-act-block" onClick={() => changeStatus(h.id, 'blocked')} id={`block-${h.id}`}>{loadingId === `change-${h.id}-blocked` ? <Loader2 size={14} className="mgmt-spinner" /> : <Ban size={14} />} {loadingId === `change-${h.id}-blocked` ? 'Blocking...' : 'Block'}</button>}
-                {h.status !== 'pending' && <button disabled={loadingId === `change-${h.id}-pending`} className="mgmt-act-btn mgmt-act-pending" onClick={() => changeStatus(h.id, 'pending')} id={`pending-${h.id}`}>{loadingId === `change-${h.id}-pending` ? <Loader2 size={14} className="mgmt-spinner" /> : <Clock size={14} />} {loadingId === `change-${h.id}-pending` ? 'Setting...' : 'Pending'}</button>}
+              <div className="mgmt-control-actions" style={{ flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {h.status !== 'active' && <button disabled={loadingId === `change-${h.id}-active`} className="mgmt-act-btn mgmt-act-approve" onClick={() => changeStatus(h.id, 'active')} id={`activate-${h.id}`}>{loadingId === `change-${h.id}-active` ? <Loader2 size={14} className="mgmt-spinner" /> : <CheckCircle2 size={14} />} Activate</button>}
+                  {h.status !== 'blocked' && <button disabled={loadingId === `change-${h.id}-blocked`} className="mgmt-act-btn mgmt-act-block" onClick={() => changeStatus(h.id, 'blocked')} id={`block-${h.id}`}>{loadingId === `change-${h.id}-blocked` ? <Loader2 size={14} className="mgmt-spinner" /> : <Ban size={14} />} Block</button>}
+                  {h.status !== 'pending' && <button disabled={loadingId === `change-${h.id}-pending`} className="mgmt-act-btn mgmt-act-pending" onClick={() => changeStatus(h.id, 'pending')} id={`pending-${h.id}`}>{loadingId === `change-${h.id}-pending` ? <Loader2 size={14} className="mgmt-spinner" /> : <Clock size={14} />} Pending</button>}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button disabled={loadingId === `plan-${h.id}-1` || isActive} className="mgmt-act-btn mgmt-act-plan-1" style={{ opacity: isActive ? 0.5 : 1, cursor: isActive ? 'not-allowed' : 'pointer' }} onClick={() => changePlan(h.id, 1)}>
+                    {loadingId === `plan-${h.id}-1` ? <Loader2 size={14} className="mgmt-spinner" /> : null} {isExpired ? 'Renew 1 Month' : '+1 Month'}
+                  </button>
+                  <button disabled={loadingId === `plan-${h.id}-12` || isActive} className="mgmt-act-btn mgmt-act-plan-12" style={{ opacity: isActive ? 0.5 : 1, cursor: isActive ? 'not-allowed' : 'pointer' }} onClick={() => changePlan(h.id, 12)}>
+                    {loadingId === `plan-${h.id}-12` ? <Loader2 size={14} className="mgmt-spinner" /> : null} {isExpired ? 'Renew 1 Year' : '+1 Year'}
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
 
@@ -381,6 +397,20 @@ export default function ManagementDashboard() {
     }
   };
 
+  const changePlan = async (id, months) => {
+    setLoadingId(`plan-${id}-${months}`);
+    try {
+      const res = await api.management.updatePlan(id, months);
+      setHotels(prev => prev.map(h => h.id === id ? { ...h, planExpiresAt: res.planExpiresAt } : h));
+      const hotel = hotels.find(h => h.id === id);
+      setLog(prev => [{ name: hotel?.name || id, action: `extended plan ${months} mo`, time: new Date().toLocaleTimeString() }, ...prev]);
+    } catch (err) {
+      alert('Failed to update hotel plan: ' + err.message);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   const approveRequest = async (req) => {
     setLoadingId(`approve-${req.id}`);
     try {
@@ -502,7 +532,7 @@ export default function ManagementDashboard() {
         ) : (
           <>
             {activeTab === 'overview' && <OverviewTab hotels={hotels} />}
-            {activeTab === 'control' && <ControlTab hotels={hotels} setHotels={setHotels} accessRequests={accessRequests} log={log} changeStatus={changeStatus} loadingId={loadingId} approveRequest={approveRequest} denyRequest={denyRequest} />}
+            {activeTab === 'control' && <ControlTab hotels={hotels} setHotels={setHotels} accessRequests={accessRequests} log={log} changeStatus={changeStatus} changePlan={changePlan} loadingId={loadingId} approveRequest={approveRequest} denyRequest={denyRequest} />}
             {activeTab === 'analytics' && <AnalyticsTab hotels={hotels} dailyPlatform={dailyPlatform} hotelDailyActivity={hotelDailyActivity} />}
           </>
         )}

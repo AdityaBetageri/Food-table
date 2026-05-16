@@ -6,7 +6,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api
  * Base fetch wrapper with auth token support
  */
 async function request(endpoint, options = {}) {
-  const token = getCookie('tabletap_token') || localStorage.getItem('tabletap_token');
+  const token = getCookie('tryscan_token') || localStorage.getItem('tryscan_token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -89,7 +89,7 @@ export const feedbackAPI = {
 // ==================== Management API ====================
 /**
  * Separate request wrapper for management endpoints
- * Uses mgmt_token instead of tabletap_token
+ * Uses mgmt_token instead of tryscan_token
  */
 async function mgmtRequest(endpoint, options = {}) {
   const token = localStorage.getItem('mgmt_token');
@@ -122,6 +122,7 @@ export const managementAuthAPI = {
 export const managementAPI = {
   getData: () => mgmtRequest('/management/data'),
   updateStatus: (id, status) => mgmtRequest(`/management/hotel/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  updatePlan: (id, months) => mgmtRequest(`/management/hotel/${id}/plan`, { method: 'PATCH', body: JSON.stringify({ months }) }),
   getAccessRequests: () => mgmtRequest('/management/access-requests'),
   approveRequest: (id) => mgmtRequest(`/management/access-requests/${id}/approve`, { method: 'PATCH' }),
   denyRequest: (id) => mgmtRequest(`/management/access-requests/${id}/deny`, { method: 'PATCH' }),

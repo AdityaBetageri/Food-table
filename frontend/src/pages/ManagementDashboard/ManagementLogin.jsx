@@ -109,7 +109,7 @@ export default function ManagementLogin() {
             </div>
           </div>
           <div className="mgmt-login-brand-footer">
-            <span>TableTap Platform v2.0</span>
+            <span>TryScan Platform v2.0</span>
           </div>
         </div>
 

@@ -11,7 +11,8 @@ export const groupOrderItems = (items) => {
     // We group by name, price, and isAddition to ensure that "NEW" items 
     // are still visually distinct from previously served/acknowledged ones.
     // If they have the same status, they get combined.
-    const key = `${item.name}-${item.price}-${!!item.isAddition}`;
+    const status = item.status || 'unknown';
+    const key = `${item.name}-${item.price}-${!!item.isAddition}-${status}`;
     if (!grouped[key]) {
       grouped[key] = { ...item };
     } else {
