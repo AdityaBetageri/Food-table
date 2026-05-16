@@ -1,10 +1,13 @@
-const CACHE_NAME = 'tryscan-v1';
+const CACHE_NAME = 'tryscan-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/app.html',
   '/styles.css',
-  '/assets/logo.png'
+  '/assets/logo.png',
+  '/assets/logo-192.png',
+  '/assets/logo-512.png',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
