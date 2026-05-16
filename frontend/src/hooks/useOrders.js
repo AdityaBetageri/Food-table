@@ -42,7 +42,7 @@ export function useOrders(status = '') {
         setOrders(prev => {
           const exists = prev.some(o => o._id === order._id);
           if (exists) {
-            // Replace existing order with updated one (no sound — it's an addition)
+            // Replace existing order with updated one (no sound for updates)
             return prev.map(o => o._id === order._id ? order : o);
           }
           // Brand-new order — play the kitchen chime
