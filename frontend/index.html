@@ -11,6 +11,7 @@
         content="QR ordering, restaurant technology, digital menu, smart restaurant, POS system, table ordering">
     <meta name="author" content="TryScan">
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1171,6 +1172,19 @@
     </div>
 
     <script type="module" src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
 </body>
 
 </html>

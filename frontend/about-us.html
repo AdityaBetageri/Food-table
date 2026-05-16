@@ -8,6 +8,7 @@
     <meta name="description"
         content="Learn about TryScan's mission to revolutionize the restaurant industry with smart QR ordering systems.">
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -254,6 +255,19 @@
     </footer>
 
     <script type="module" src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
 </body>
 
 </html>

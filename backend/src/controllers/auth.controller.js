@@ -61,7 +61,8 @@ async function buildUserResponse(user) {
         address: hotel.address || '',
         city: hotel.city || '',
         timings: hotel.timings || { open: '09:00', close: '23:00' },
-        settings: hotel.settings || { acceptOrders: true, playSound: true, autoPrint: false }
+        settings: hotel.settings || { acceptOrders: true, playSound: true, autoPrint: false },
+        planExpiresAt: hotel.planExpiresAt || null
       };
     }
   }

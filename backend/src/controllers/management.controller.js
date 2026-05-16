@@ -70,7 +70,8 @@ exports.getData = async (req, res, next) => {
         status: h.approvalStatus === 'pending' ? 'pending' : h.approvalStatus === 'denied' ? 'blocked' : (h.isActive ? 'active' : 'blocked'),
         joinedDate: h.createdAt ? h.createdAt.split('T')[0] : 'N/A',
         revenue: `₹${revenue.toLocaleString()}`,
-        dailyUsers: Math.round(revenue / 500) || 0 // Mocking daily users based on revenue
+        dailyUsers: Math.round(revenue / 500) || 0, // Mocking daily users based on revenue
+        planExpiresAt: h.planExpiresAt || null
       };
     });
 
@@ -133,6 +134,43 @@ exports.updateHotelStatus = async (req, res, next) => {
     }
 
     res.json({ message: `Hotel status updated to ${status}.` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateHotelPlan = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { months } = req.body;
+    
+    const hotelRef = doc(db, 'hotels', id);
+    const snap = await getDoc(hotelRef);
+    if (!snap.exists()) return res.status(404).json({ message: 'Hotel not found.' });
+
+    const hotelData = snap.data();
+    let currentDate = hotelData.planExpiresAt ? new Date(hotelData.planExpiresAt) : new Date();
+    
+    // If expired, start from today
+    if (currentDate < new Date()) {
+      currentDate = new Date();
+    }
+    
+    currentDate.setMonth(currentDate.getMonth() + parseInt(months));
+    const planExpiresAt = currentDate.toISOString();
+
+    await updateDoc(hotelRef, { planExpiresAt });
+    
+    // Also update the owner user's planExpiresAt
+    if (hotelData.ownerId) {
+      const userRef = doc(db, 'users', hotelData.ownerId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        await updateDoc(userRef, { planExpiresAt });
+      }
+    }
+
+    res.json({ message: `Plan updated. Expires on ${currentDate.toDateString()}`, planExpiresAt });
   } catch (err) {
     next(err);
   }

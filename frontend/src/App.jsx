@@ -7,6 +7,7 @@ import { SocketProvider } from './context/SocketContext';
 // Route Guards
 import ProtectedRoute from './components/ProtectedRoute';
 import GuestRoute from './components/GuestRoute';
+import { useAuth } from './context/AuthContext';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -37,6 +38,25 @@ import { Menu, UtensilsCrossed } from 'lucide-react';
 function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
+
+  let showWarning = false;
+  let expireText = '';
+  let isExpired = false;
+  if (user?.hotel?.planExpiresAt) {
+    const expireDate = new Date(user.hotel.planExpiresAt);
+    const now = new Date();
+    const diffTime = Math.abs(expireDate - now);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (expireDate < now) {
+      isExpired = true;
+      showWarning = true;
+      expireText = 'Your plan has expired. Please contact support to renew.';
+    } else if (diffDays <= 2) {
+      showWarning = true;
+      expireText = `Your plan expires in ${diffDays} day(s). Please contact support to renew.`;
+    }
+  }
 
   return (
     <div className="dashboard-layout">
@@ -64,7 +84,24 @@ function DashboardLayout() {
           </button>
         </div>
         <div className="dashboard-content">
-          <Outlet context={{ setMobileOpen }} />
+          {showWarning && !isExpired && (
+            <div style={{ background: '#FADBD8', color: '#C0392B', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>⚠️</span> {expireText}
+            </div>
+          )}
+          {isExpired ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: '20px' }}>
+              <div style={{ background: '#FADBD8', borderRadius: '100%', height: '95px', width: '95px', padding: '5px', marginBottom: '20px' }}>
+                <span style={{ fontSize: '48px' }}>⚠️</span>
+              </div>
+              <h2 style={{ color: '#C0392B', marginBottom: '12px', fontSize: '24px', fontWeight: 700 }}>Plan Expired</h2>
+              <p style={{ color: '#5D6D7E', fontSize: '16px', maxWidth: '400px', lineHeight: 1.6 }}>
+                Your subscription plan has expired. You cannot access the platform features until you renew your plan. Please contact support or your account manager to renew.
+              </p>
+            </div>
+          ) : (
+            <Outlet context={{ setMobileOpen }} />
+          )}
         </div>
       </main>
     </div>

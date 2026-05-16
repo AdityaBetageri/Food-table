@@ -7,6 +7,7 @@ const managementAuth = require('../middleware/managementAuth.middleware');
 
 router.get('/data', managementAuth, managementController.getData);
 router.patch('/hotel/:id/status', managementAuth, managementController.updateHotelStatus);
+router.patch('/hotel/:id/plan', managementAuth, managementController.updateHotelPlan);
 
 // Access Requests
 router.get('/access-requests', managementAuth, managementController.getAccessRequests);

@@ -122,6 +122,7 @@ export const managementAuthAPI = {
 export const managementAPI = {
   getData: () => mgmtRequest('/management/data'),
   updateStatus: (id, status) => mgmtRequest(`/management/hotel/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  updatePlan: (id, months) => mgmtRequest(`/management/hotel/${id}/plan`, { method: 'PATCH', body: JSON.stringify({ months }) }),
   getAccessRequests: () => mgmtRequest('/management/access-requests'),
   approveRequest: (id) => mgmtRequest(`/management/access-requests/${id}/approve`, { method: 'PATCH' }),
   denyRequest: (id) => mgmtRequest(`/management/access-requests/${id}/deny`, { method: 'PATCH' }),

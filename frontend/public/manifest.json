@@ -1,0 +1,16 @@
+{
+  "name": "TryScan",
+  "short_name": "TryScan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "description": "TryScan is a cloud-based Smart QR Restaurant Ordering System.",
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
