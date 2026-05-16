@@ -32,7 +32,7 @@ exports.getData = async (req, res, next) => {
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
-    
+
     // Initialize platformDaily for last 7 days
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -51,7 +51,7 @@ exports.getData = async (req, res, next) => {
       if (dateStr && platformDaily[dateStr]) {
         platformDaily[dateStr].orders++;
         // Mock visitors as orders * 1.5 for realism if not tracked
-        platformDaily[dateStr].visitors += 2; 
+        platformDaily[dateStr].visitors += 2;
       }
     });
 
@@ -83,12 +83,12 @@ exports.getData = async (req, res, next) => {
     hotelsList.forEach(h => {
       const activityData = new Array(7).fill(0);
       const hotelOrders = allOrders.filter(o => o.hotelId === h._id);
-      
+
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dateStr = d.toISOString().split('T')[0];
-        
+
         const count = hotelOrders.filter(o => o.createdAt && o.createdAt.split('T')[0] === dateStr).length;
         activityData[6 - i] = count;
       }
@@ -113,7 +113,7 @@ exports.updateHotelStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body; // 'active', 'blocked', 'pending'
-    
+
     const hotelRef = doc(db, 'hotels', id);
     const snap = await getDoc(hotelRef);
     if (!snap.exists()) return res.status(404).json({ message: 'Hotel not found.' });
@@ -121,7 +121,7 @@ exports.updateHotelStatus = async (req, res, next) => {
     const hotelData = snap.data();
     const isActive = status === 'active';
     const approvalStatus = status === 'active' ? 'accepted' : status === 'blocked' ? 'denied' : 'pending';
-    
+
     await updateDoc(hotelRef, { isActive, approvalStatus });
 
     // Also update the owner user's approvalStatus
@@ -143,24 +143,29 @@ exports.updateHotelPlan = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { months } = req.body;
-    
+
+    const monthsNum = parseInt(months, 10);
+    if (!months || isNaN(monthsNum) || monthsNum <= 0) {
+      return res.status(400).json({ message: 'Invalid months value. Must be a positive integer.' });
+    }
+
     const hotelRef = doc(db, 'hotels', id);
     const snap = await getDoc(hotelRef);
     if (!snap.exists()) return res.status(404).json({ message: 'Hotel not found.' });
 
     const hotelData = snap.data();
     let currentDate = hotelData.planExpiresAt ? new Date(hotelData.planExpiresAt) : new Date();
-    
+
     // If expired, start from today
     if (currentDate < new Date()) {
       currentDate = new Date();
     }
-    
-    currentDate.setMonth(currentDate.getMonth() + parseInt(months));
+
+    currentDate.setMonth(currentDate.getMonth() + monthsNum);
     const planExpiresAt = currentDate.toISOString();
 
     await updateDoc(hotelRef, { planExpiresAt });
-    
+
     // Also update the owner user's planExpiresAt
     if (hotelData.ownerId) {
       const userRef = doc(db, 'users', hotelData.ownerId);
@@ -169,7 +174,6 @@ exports.updateHotelPlan = async (req, res, next) => {
         await updateDoc(userRef, { planExpiresAt });
       }
     }
-
     res.json({ message: `Plan updated. Expires on ${currentDate.toDateString()}`, planExpiresAt });
   } catch (err) {
     next(err);

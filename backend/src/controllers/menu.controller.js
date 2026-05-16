@@ -1,6 +1,6 @@
 const {
   db, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  query, where, orderBy, docToObj, docsToArray,
+  query, docToObj, docsToArray,
 } = require('../db/firebase');
 
 /**
@@ -43,7 +43,7 @@ exports.create = async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
     const ref = await addDoc(collection(db, 'menuItems', req.user.hotelId, 'items'), data);
-    
+
     // Notify clients
     const io = req.app.get('io');
     if (io) io.to(`hotel_${req.user.hotelId}`).emit('menu_update', { type: 'create' });
@@ -68,7 +68,7 @@ exports.update = async (req, res, next) => {
     if (updates.price) updates.price = Number(updates.price);
     await updateDoc(ref, updates);
     const updated = await getDoc(ref);
-    
+
     // Notify clients
     const io = req.app.get('io');
     if (io) io.to(`hotel_${req.user.hotelId}`).emit('menu_update', { type: 'update' });
