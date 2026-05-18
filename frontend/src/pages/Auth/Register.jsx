@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UtensilsCrossed, ArrowRight, Clock, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
-import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../../firebase';
+// Firebase OTP imports removed — ENABLE_OTP is false. Re-add when Blaze plan is active.
+// import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../../firebase';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', hotelName: '', email: '', phone: '', city: '', password: '', confirmPassword: '' });
