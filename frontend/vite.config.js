@@ -5,7 +5,10 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   appType: 'mpa',
-  server: { port: 3500 },
+  server: {
+    port: 3000
+    // FAIL instead of silently switching to another port
+  },
   plugins: [
     react(),
     {
