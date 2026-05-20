@@ -86,6 +86,7 @@ export const analyticsAPI = {
 // ==================== Feedback API ====================
 export const feedbackAPI = {
   submit: (body) => request('/feedback', { method: 'POST', body: JSON.stringify(body) }),
+  getAll: () => request('/feedback'),
 };
 
 // ==================== Management API ====================
