@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UtensilsCrossed, ArrowRight, Clock, XCircle, ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-react';
 
@@ -11,14 +11,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState(null); // null | 'pending' | 'denied' | 'updated'
   const [approvalMessage, setApprovalMessage] = useState('');
-  const { login, forgotPassword, isAuthenticated } = useAuth();
+  const { login, forgotPassword } = useAuth();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+  const location = useLocation();
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
@@ -49,7 +44,8 @@ export default function Login() {
     try {
       await login(email, password);
       // Fast transition
-      navigate('/dashboard', { replace: true });
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (err) {
       const msg = err.message || 'Login failed';
       // Check if the error message contains approval status info
@@ -72,7 +68,7 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
             <UtensilsCrossed size={32} style={{ color: '#5DADE2' }} />
-            <span style={{ fontSize: '28px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", color: '#fff' }}>Table<span style={{ color: '#5DADE2' }}>Tap</span></span>
+            <span style={{ fontSize: '28px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", color: '#fff' }}>Try<span style={{ color: '#5DADE2' }}>Scan</span></span>
           </Link>
           <p style={{ color: '#94A3B8', marginTop: '8px', fontSize: '15px' }}>Welcome back! Log in to your dashboard.</p>
         </div>

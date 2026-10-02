@@ -437,7 +437,7 @@ export default function CustomerMenu() {
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {item.qty}x {item.name}
-                          {orderStage >= 4 ? (
+                          {(orderStage >= 4 || item.status === 'served' || item.status === 'paid') ? (
                             <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #86EFAC' }}>SERVED</span>
                           ) : (
                             <span style={{ fontSize: '9px', background: '#FFF9C4', color: '#F57F17', padding: '1px 5px', borderRadius: '4px', fontWeight: 800, border: '1px solid #FBC02D' }}>PREPARING</span>
@@ -502,7 +502,7 @@ export default function CustomerMenu() {
           <div>
             <span style={{ fontSize: '20px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', gap: '8px' }}>
               <UtensilsCrossed size={20} style={{ color: '#AED6F1' }} />
-              Table<span style={{ color: '#AED6F1' }}>Tap</span>
+              Try<span style={{ color: '#AED6F1' }}>Scan</span>
             </span>
             <div style={{ fontSize: '13px', opacity: 0.8, marginTop: '2px' }}>
               Table {tableNum}
@@ -657,7 +657,7 @@ export default function CustomerMenu() {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '14px', color: '#1B4F72' }}>{item.qty}x {item.name}</div>
                       <div style={{ marginTop: '4px' }}>
-                        {orderStage >= 4 ? (
+                        {(orderStage >= 4 || item.status === 'served' || item.status === 'paid') ? (
                           <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>SERVED</span>
                         ) : (
                           <span style={{ fontSize: '10px', background: '#FFF9C4', color: '#F57F17', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>PREPARING</span>

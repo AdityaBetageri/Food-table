@@ -12,7 +12,7 @@ exports.submitContactForm = async (req, res, next) => {
     }
 
     // 1. Send email to Admin
-    const adminEmail = process.env.ADMIN_EMAIL || 'hello@tabletap.in';
+    const adminEmail = process.env.ADMIN_EMAIL || 'hello@tryscan.in';
     const adminContent = `
       <h3>New Contact Form Submission</h3>
       <p><strong>Name:</strong> ${name}</p>
@@ -33,10 +33,10 @@ exports.submitContactForm = async (req, res, next) => {
     const userContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <h2 style="color: #1B4F72;">Hello ${name}!</h2>
-        <p>Thank you for reaching out to <strong>TableTap</strong>. We have received your message regarding "${subject}" and our team will get back to you shortly.</p>
+        <p>Thank you for reaching out to <strong>TryScan</strong>. We have received your message regarding "${subject}" and our team will get back to you shortly.</p>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
         <p style="font-size: 14px; color: #666;">This is an automated confirmation. Please do not reply to this email directly.</p>
-        <p style="font-size: 14px; color: #666;">&copy; 2026 TableTap Smart QR System</p>
+        <p style="font-size: 14px; color: #666;">&copy; 2026 TryScan Smart QR System</p>
       </div>
     `;
 
@@ -44,9 +44,9 @@ exports.submitContactForm = async (req, res, next) => {
     try {
       await sendEmail({
         to: email,
-        subject: 'We received your message — TableTap',
+        subject: 'We received your message — TryScan',
         html: userContent,
-        text: `Hello ${name}, thank you for reaching out to TableTap. We have received your message and will get back to you soon.`
+        text: `Hello ${name}, thank you for reaching out to TryScan. We have received your message and will get back to you soon.`
       });
     } catch (e) {
       console.warn('Could not send confirmation email to user:', e.message);

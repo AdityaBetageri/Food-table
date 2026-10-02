@@ -40,7 +40,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
         <UtensilsCrossed size={24} style={{ color: '#5DADE2', flexShrink: 0 }} />
         {!collapsed && (
           <span style={{ fontSize: '20px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", whiteSpace: 'nowrap' }}>
-            Table<span style={{ color: '#5DADE2' }}>Tap</span>
+            Try<span style={{ color: '#5DADE2' }}>Scan</span>
           </span>
         )}
       </div>

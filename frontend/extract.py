@@ -18,7 +18,7 @@ def process_pdf(filename, title, out_path):
     for line in lines:
         l = line.strip()
         if not l: continue
-        if l == 'n' or "Automatic Zoom" in l or l.startswith("Page ") or "www.tabletap.in" in l or l.startswith("Effective Date:"):
+        if l == 'n' or "Automatic Zoom" in l or l.startswith("Page ") or "www.tryscan.in" in l or l.startswith("Effective Date:"):
             continue
         filtered_lines.append(l)
 

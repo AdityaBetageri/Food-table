@@ -11,7 +11,7 @@ export default function Navbar() {
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
         <UtensilsCrossed size={24} style={{ color: '#2E86C1' }} />
         <span style={{ fontSize: '20px', fontWeight: 800, fontFamily: "'Outfit',sans-serif", color: '#1B4F72' }}>
-          Table<span style={{ color: '#2E86C1' }}>Tap</span>
+          Try<span style={{ color: '#2E86C1' }}>Scan</span>
         </span>
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

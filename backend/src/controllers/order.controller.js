@@ -30,6 +30,7 @@ exports.create = async (req, res, next) => {
             updatedItems.push({ 
               ...newItem, 
               isAddition: true, 
+              status: 'new',
               addedAt: new Date().toISOString() 
             });
           });
@@ -74,7 +75,7 @@ exports.create = async (req, res, next) => {
       tableId,
       tableNumber: Number(tableNumber),
       orderNumber,
-      items,
+      items: items.map(item => ({ ...item, status: 'new' })),
       total,
       specialInstructions: specialInstructions || '',
       status: 'new',
@@ -178,7 +179,10 @@ exports.updateStatus = async (req, res, next) => {
     // This ensures that only actually new items in the next update will have the 'NEW' badge
     if (status !== 'new') {
       const items = snap.data().items || [];
-      updates.items = items.map(item => ({ ...item, isAddition: false }));
+      updates.items = items.map(item => {
+        const itemStatus = (item.status === 'served' || item.status === 'paid') ? item.status : status;
+        return { ...item, isAddition: false, status: itemStatus };
+      });
       updates.isUpdated = false;
     }
 
@@ -245,7 +249,7 @@ exports.updatePayment = async (req, res, next) => {
       
       // Clear 'isAddition' flag from items and reset 'isUpdated' when order is finalized
       const items = snap.data().items || [];
-      updates.items = items.map(item => ({ ...item, isAddition: false }));
+      updates.items = items.map(item => ({ ...item, isAddition: false, status: 'paid' }));
       updates.isUpdated = false;
     }
 

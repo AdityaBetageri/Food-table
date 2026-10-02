@@ -140,7 +140,10 @@
 .mgmt-act-block:hover { background: #E74C3C; color: #fff; transform: translateY(-1px); }
 .mgmt-act-pending { background: rgba(243,156,18,.08); color: #B7770D; }
 .mgmt-act-pending:hover { background: #F39C12; color: #fff; transform: translateY(-1px); }
-
+.mgmt-act-plan-1 { background: #E3F2FD; color: #1976D2; }
+.mgmt-act-plan-1:hover:not(:disabled) { background: #1976D2; color: #fff; transform: translateY(-1px); }
+.mgmt-act-plan-12 { background: #E8F5E9; color: #388E3C; }
+.mgmt-act-plan-12:hover:not(:disabled) { background: #388E3C; color: #fff; transform: translateY(-1px); }
 /* Action Log */
 .mgmt-log { display: flex; flex-direction: column; gap: 6px; }
 .mgmt-log-row {

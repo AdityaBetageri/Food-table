@@ -32,7 +32,7 @@ const sendEmail = async (options) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"TableTap Contact" <${process.env.EMAIL_USER}>`,
+      from: `"TryScan Contact" <${process.env.EMAIL_USER}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,

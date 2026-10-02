@@ -14,7 +14,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: [
+      process.env.CLIENT_URL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:3500',
+    ].filter(Boolean),
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   },
@@ -28,7 +33,7 @@ setupSocket(io);
 
 // ==================== Start Server ====================
 server.listen(PORT, () => {
-  console.log('\n🚀 TableTap Backend Server running!');
+  console.log('\n🚀 TryScan Backend Server running!');
   console.log(`   API:      http://localhost:${PORT}/api`);
   console.log(`   Health:   http://localhost:${PORT}/api/health`);
   console.log(`   Socket:   ws://localhost:${PORT}`);

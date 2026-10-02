@@ -7,5 +7,6 @@ const roleGuard = require('../middleware/role.middleware');
 // Analytics — owner only
 router.get('/summary', auth, roleGuard('owner'), analyticsController.getSummary);
 router.get('/heatmap', auth, roleGuard('owner'), analyticsController.getHeatmap);
+router.get('/export', auth, roleGuard('owner'), analyticsController.getExportData);
 
 module.exports = router;

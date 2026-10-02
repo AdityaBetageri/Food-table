@@ -1,4 +1,4 @@
-const { db, collection, addDoc } = require('../db/firebase');
+const { db, collection, addDoc, getDocs, query, where, docsToArray } = require('../db/firebase');
 
 exports.submit = async (req, res, next) => {
   try {
@@ -17,3 +17,15 @@ exports.submit = async (req, res, next) => {
     res.status(201).json({ _id: ref.id, ...data });
   } catch (err) { next(err); }
 };
+
+exports.getAllForHotel = async (req, res, next) => {
+  try {
+    const q = query(collection(db, 'feedback'), where('hotelId', '==', req.user.hotelId));
+    const snap = await getDocs(q);
+    const feedbackList = docsToArray(snap).sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    res.json(feedbackList);
+  } catch (err) { next(err); }
+};
+
